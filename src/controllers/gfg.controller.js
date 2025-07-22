@@ -25,6 +25,8 @@ const getUserInfo = async (req, res) => {
 
             const getText = (element) => element?.textContent || "NA";
            
+            let username = getText(document.querySelector(".profilePicSection_head_userHandle__oOfFy"));
+            let avatar = "https://www.geeksforgeeks.org/" + document.querySelector(".profilePicSection_head_img__1GLm0 > span > img").getAttribute("src");
             let institutionName = getText(document.querySelector(".educationDetails_head_left--text__tgi9I"));
             let institutionRank = getText(document.querySelector(".educationDetails_head_left_userRankContainer--text__wt81s b"))?.split(" ")[0];
             let languagesUsed = getText(document.querySelector(".educationDetails_head_right--text__lLOHI"));
@@ -44,6 +46,8 @@ const getUserInfo = async (req, res) => {
             if (codingScore == "__") codingScore = "0";
 
             const gfgData = {
+                username,
+                avatar,
                 institutionName,
                 institutionRank,
                 languagesUsed,
