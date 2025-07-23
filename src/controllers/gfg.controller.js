@@ -1,4 +1,6 @@
 import puppeteer from "puppeteer";
+import puppeteerCore from "puppeteer-core";
+import chromium from '@sparticuz/chromium-min';
 import {APIError} from "../utils/APIError.js"
 import { NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
 import {APiResponse} from "../utils/APIResponse.js"
@@ -13,10 +15,20 @@ const getUserInfo = async (req, res) => {
 
     let browser;
     try {
-        browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-gpu', "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
-        });
+        if (NODE_ENV=="production"){
+            const executablePath = await chromium.executablePath(PUPPETEER_EXECUTABLE_PATH);
+            browser = await puppeteerCore.launch({
+                executablePath,
+                args: ['--no-sandbox', '--disable-gpu', "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+                headless: true,
+                defaultViewport : chromium.defaultViewport,
+            })
+        } else {
+             browser = await puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox', '--disable-gpu', "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+            });
+        }
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
         await page.goto(url, { waitUntil: 'networkidle0' });
