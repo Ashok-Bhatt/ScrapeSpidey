@@ -6,6 +6,8 @@ const app = express();
 app.use(cors({origin : "*",}));
 app.use("/api/v1/gfg", GfgRouter);
 
-app.get("/").send("Welcome to scrape spidey! Scrape data from your favorite websites.")
+app.get("/", (req, res)=>{
+    res.send("Welcome to scrape spidey! Scrape data from your favorite websites.")
+})
 
 export {app};

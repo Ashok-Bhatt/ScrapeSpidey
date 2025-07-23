@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
 import {APIError} from "../utils/APIError.js"
+import { NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
 import {APiResponse} from "../utils/APIResponse.js"
 
 const getUserInfo = async (req, res) => {
@@ -14,7 +15,8 @@ const getUserInfo = async (req, res) => {
     try {
         browser = await puppeteer.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-gpu']
+            args: ['--no-sandbox', '--disable-gpu', "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+            executablePath: PUPPETEER_EXECUTABLE_PATH,
         });
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
