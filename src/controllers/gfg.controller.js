@@ -89,6 +89,7 @@ const getUserInfo = async (req, res) => {
         res.json(data);
         browser.close();
     } catch (error) {
+        console.log(error.message);
         throw new APIError(400, error.message);
         // res.status(500).json({ error: "Failed to fetch data", details: error.message });
     } finally {
