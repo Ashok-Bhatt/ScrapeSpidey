@@ -19,14 +19,14 @@ const getUserInfo = async (req, res) => {
             const executablePath = await chromium.executablePath(PUPPETEER_EXECUTABLE_PATH);
             browser = await puppeteerCore.launch({
                 executablePath,
-                args: ['--no-sandbox', '--disable-gpu', "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+                args: ['--no-sandbox', '--disable-gpu'],
                 headless: true,
                 defaultViewport : chromium.defaultViewport,
             })
         } else {
-             browser = await puppeteer.launch({
+            browser = await puppeteer.launch({
                 headless: true,
-                args: ['--no-sandbox', '--disable-gpu', "--disable-setuid-sandbox", "--single-process", "--no-zygote"],
+                args: ['--no-sandbox', '--disable-gpu'],
             });
         }
         const page = await browser.newPage();
@@ -78,8 +78,6 @@ const getUserInfo = async (req, res) => {
                 }
             }
 
-            // console.log(getText(document.querySelectorAll(".problemNavbar_head_nav--text__UaGCx")[0]));
-
             document.querySelectorAll(".problemNavbar_head_nav--text__UaGCx").forEach((selector)=>{
                 let key = (selector.textContent.split(" ")[0]).toLocaleLowerCase(), value = selector.textContent.split(" ")[1];
                 value = value.slice(1, value.length-1);
@@ -89,6 +87,7 @@ const getUserInfo = async (req, res) => {
             return gfgData;
         });
         res.json(data);
+        browser.close();
     } catch (error) {
         throw new APIError(400, error.message);
         // res.status(500).json({ error: "Failed to fetch data", details: error.message });

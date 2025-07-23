@@ -19,7 +19,7 @@
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "node": "^20.19.4",
-    "puppeteer": "^24.14.0",
-    "puppeteer-core": "^24.14.0"
+    "puppeteer": "^24.4.0",
+    "puppeteer-core": "^24.4.0"
   }
 }

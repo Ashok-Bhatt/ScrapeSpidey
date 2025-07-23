@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import puppeteer from 'puppeteer';
+import puppeteer, { executablePath } from 'puppeteer';
 
 const PORT = process.env.PORT || 8000;
 const NODE_ENV = process.env.NODE_ENV || "development";
