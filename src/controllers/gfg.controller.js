@@ -2,33 +2,23 @@ import puppeteer from "puppeteer";
 import puppeteerCore from "puppeteer-core";
 import chromium from '@sparticuz/chromium-min';
 import {APIError} from "../utils/APIError.js"
-import { NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
+import {BROWSERLESS_TOKEN } from "../config.js";
 import {APiResponse} from "../utils/APIResponse.js"
 
 const getUserInfo = async (req, res) => {
     const username = req.params.user;
     const url = `https://www.geeksforgeeks.org/user/${username}/`;
+    const token = BROWSERLESS_TOKEN;
 
     if (!username){
         return new APIError(400, "Username not found");
-    }   
+    }
 
     let browser;
     try {
-        if (NODE_ENV=="production"){
-            const executablePath = await chromium.executablePath(PUPPETEER_EXECUTABLE_PATH);
-            browser = await puppeteerCore.launch({
-                executablePath,
-                args: ['--no-sandbox', '--disable-gpu'],
-                headless: true,
-                defaultViewport : chromium.defaultViewport,
-            })
-        } else {
-            browser = await puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-gpu'],
-            });
-        }
+        const browser = await puppeteerCore.connect({
+            browserWSEndpoint: `wss://production-sfo.browserless.io?token=${token}`,
+        });
 
         if (!browser){
             res.status(500).json({ error: "Failed to setup browser"});
@@ -44,7 +34,7 @@ const getUserInfo = async (req, res) => {
             const getText = (element) => element?.textContent || "NA";
            
             let username = getText(document.querySelector(".profilePicSection_head_userHandle__oOfFy"));
-            let avatar = "https://www.geeksforgeeks.org/" + document.querySelector(".profilePicSection_head_img__1GLm0 > span > img").getAttribute("src");
+            let avatar = document.querySelector(".profilePicSection_head_img__1GLm0 > span > img")?.getAttribute("src") || "NA";
             let institutionName = getText(document.querySelector(".educationDetails_head_left--text__tgi9I"));
             let institutionRank = getText(document.querySelector(".educationDetails_head_left_userRankContainer--text__wt81s b"))?.split(" ")[0];
             let languagesUsed = getText(document.querySelector(".educationDetails_head_right--text__lLOHI"));
@@ -62,6 +52,7 @@ const getUserInfo = async (req, res) => {
             if (globalMaxStreak != "NA") globalMaxStreak = globalMaxStreak.slice(1, globalMaxStreak.length);
             if (contestTopPercentage != "NA") contestTopPercentage = contestTopPercentage.slice(0, contestTopPercentage.length-1);
             if (codingScore == "__") codingScore = "0";
+            if (avatar != "NA") avatar = "https://www.geeksforgeeks.org/" + avatar;
 
             const gfgData = {
                 username,
