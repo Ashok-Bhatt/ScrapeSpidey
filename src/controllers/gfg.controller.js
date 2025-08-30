@@ -1,32 +1,41 @@
-import puppeteer from "puppeteer";
 import puppeteerCore from "puppeteer-core";
-import chromium from '@sparticuz/chromium-min';
+import puppeteer from "puppeteer"
 import {APIError} from "../utils/APIError.js"
-import {BROWSERLESS_TOKEN } from "../config.js";
-import {APiResponse} from "../utils/APIResponse.js"
+import {BROWSERLESS_TOKEN, NODE_ENV } from "../config.js";
+
+const configChromiumDriver = async () => {
+    if (NODE_ENV == "development"){
+        return await puppeteer.launch({
+            headless: false,
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        });
+    } else {
+        return await puppeteerCore.connect({
+            browserWSEndpoint: `wss://production-sfo.browserless.io?token=${BROWSERLESS_TOKEN}`,
+        });
+    }
+}
 
 const getUserInfo = async (req, res) => {
     const username = req.params.user;
     const url = `https://www.geeksforgeeks.org/user/${username}/`;
-    const token = BROWSERLESS_TOKEN;
 
     if (!username){
         return new APIError(400, "Username not found");
     }
 
     let browser;
+    let page;
     try {
-        const browser = await puppeteerCore.connect({
-            browserWSEndpoint: `wss://production-sfo.browserless.io?token=${token}`,
-        });
+        browser = await configChromiumDriver();
 
         if (!browser){
             res.status(500).json({ error: "Failed to setup browser"});
         }
 
-        const page = await browser.newPage();
+        page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'networkidle0' });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
         await page.waitForSelector('.educationDetails_head_left--text__tgi9I', { timeout: 5000 });
 
         const data = await page.evaluate(() => {
@@ -71,7 +80,7 @@ const getUserInfo = async (req, res) => {
                 codingScore,
                 problemsSolved : {
                     total : totalProblemsSolved==="__" ? "0" : totalProblemsSolved,
-                }
+                },
             }
 
             document.querySelectorAll(".problemNavbar_head_nav--text__UaGCx").forEach((selector)=>{
@@ -86,13 +95,48 @@ const getUserInfo = async (req, res) => {
         browser.close();
     } catch (error) {
         console.log(error.message);
-        // throw new APIError(400, error.message);
         res.status(500).json({ error: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }
 };
 
+const getUserSubmissions = async (req, res) => {
+    const username = req.params.user;
+    const url = `https://www.geeksforgeeks.org/user/${username}/`;
+
+    if (!username){
+        return new APIError(400, "Username not found");
+    }
+
+    let browser;
+    let page;
+    try {
+        browser = await configChromiumDriver();
+
+        if (!browser){
+            res.status(500).json({ error: "Failed to setup browser"});
+        }
+
+        page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
+        await page.waitForSelector('.heatMapCard_head__QlR7_', { timeout: 15000 });
+
+        const data = await page.evaluate(() => {
+            return JSON.parse(document.querySelector("#__NEXT_DATA__").textContent)["props"]["pageProps"]["heatMapData"]["result"];
+        });
+
+        res.status(200).json(data);
+        browser.close();
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch data", details: error.message });
+    } finally {
+        if (browser) await browser.close();
+    }
+}
+
 export {
     getUserInfo,
+    getUserSubmissions,
 }
