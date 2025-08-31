@@ -27,7 +27,6 @@ const getUserInfo = async (req, res) => {
 
             const getText = (element) => element?.textContent || "NA";
 
-            // const usernameElement = Array.from(document.querySelector(".side-nav > li").querySelectorAll("span"));
             const problemsSolvedElement = Array.from(document.querySelectorAll(".rating-data-section.problems-solved h3"));
             const profileImageElement = document.querySelector(".profileImage");
             const currentRatingElement = document.querySelector(".rating-number");
@@ -93,6 +92,54 @@ const getUserInfo = async (req, res) => {
     }
 };
 
+const getUserSubmissions = async (req, res) => {
+
+    const username = req.params.user;
+    const url = `https://www.codechef.com/users/${username}/`;
+
+    if (!username){
+        return new APIError(400, "Username not found");
+    }
+
+    let browser;
+    let page;
+    try {
+        browser = await configChromeDriver();
+
+        if (!browser){
+            res.status(500).json({ error: "Failed to setup browser"});
+        }
+
+        page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
+        await page.waitForSelector('.user-details-container.plr10', { timeout: 5000 });
+
+        const data = await page.evaluate(() => {
+
+            const heatmapElement = Array.from(document.querySelectorAll(".heatmap-content svg rect"));
+            const heatmapData = {};
+
+            heatmapElement.map((heatmapBlock)=>{
+                const date = heatmapBlock.getAttribute("data-date");
+                const submissionsCount = heatmapBlock.getAttribute("data-count");
+                heatmapData[date] = (submissionsCount ? parseInt(submissionsCount) : 0);
+            })
+
+            return heatmapData;
+        });
+
+        res.json(data);
+        browser.close();
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).json({ error: "Failed to fetch data", details: error.message });
+    } finally {
+        if (browser) await browser.close();
+    }
+}
+
 export {
     getUserInfo,
+    getUserSubmissions,
 }
