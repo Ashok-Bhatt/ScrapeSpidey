@@ -1,20 +1,5 @@
-import puppeteerCore from "puppeteer-core";
-import puppeteer from "puppeteer"
 import {APIError} from "../utils/APIError.js"
-import {BROWSERLESS_TOKEN, NODE_ENV } from "../config.js";
-
-const configChromiumDriver = async () => {
-    if (NODE_ENV == "development"){
-        return await puppeteer.launch({
-            headless: false,
-            args: ["--no-sandbox", "--disable-setuid-sandbox"]
-        });
-    } else {
-        return await puppeteerCore.connect({
-            browserWSEndpoint: `wss://production-sfo.browserless.io?token=${BROWSERLESS_TOKEN}`,
-        });
-    }
-}
+import {configChromeDriver} from "../utils/chromeDriver.js"
 
 const getUserInfo = async (req, res) => {
     const username = req.params.user;
@@ -27,7 +12,7 @@ const getUserInfo = async (req, res) => {
     let browser;
     let page;
     try {
-        browser = await configChromiumDriver();
+        browser = await configChromeDriver();
 
         if (!browser){
             res.status(500).json({ error: "Failed to setup browser"});
@@ -112,7 +97,7 @@ const getUserSubmissions = async (req, res) => {
     let browser;
     let page;
     try {
-        browser = await configChromiumDriver();
+        browser = await configChromeDriver();
 
         if (!browser){
             res.status(500).json({ error: "Failed to setup browser"});
