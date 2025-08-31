@@ -23,54 +23,66 @@ const getUserInfo = async (req, res) => {
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
         await page.waitForSelector('.user-details-container.plr10', { timeout: 5000 });
 
-        const data = await page.evaluate(() => {
+        const data = await page.evaluate((username) => {
 
             const getText = (element) => element?.textContent || "NA";
 
-            const userNameElement = document.querySelector(".m-username--link");
+            // const usernameElement = Array.from(document.querySelector(".side-nav > li").querySelectorAll("span"));
             const problemsSolvedElement = Array.from(document.querySelectorAll(".rating-data-section.problems-solved h3"));
             const profileImageElement = document.querySelector(".profileImage");
             const currentRatingElement = document.querySelector(".rating-number");
-            const contestDivElement = Array.from(document.querySelectorAll(".rating-header>div"))[1];
-            const contestStarsElement = Array.from(document.querySelectorAll(".rating-star span"));
             const highestRatingElement = document.querySelector(".rating-header>small");
-            const badgesElement = Array.from(document.querySelectorAll(".widget.badges"));
+            const contestDivElement = Array.from(document.querySelectorAll(".rating-header>div"));
+            const contestStarsElement = Array.from(document.querySelectorAll(".rating-star span"));
+            const leagueBadgeElement = document.querySelector(".user-league-container > img");
+            const RankElements = document.querySelectorAll(".rating-ranks li a")
+            const achievementsElement = Array.from(document.querySelectorAll(".widget.badges"));
+
+            const skillTestElement = achievementsElement.length == 2 ? Array.from(achievementsElement[0].querySelectorAll(".skill-tests__block")) : null;
+            const badgesElement = achievementsElement.length == 2 ? Array.from(achievementsElement[1].querySelectorAll(".badge")) : Array.from(achievementsElement[0].querySelectorAll(".badge"));
 
             // Skill Tests
-            const skillTests = Array.from(badgesElement[0].querySelectorAll(".skill-tests__block")).map((skillTestElement)=>{
+            const skillTests = skillTestElement ? skillTestElement.map((skillTestElement)=>{
                 return {
                     percentageScore : getText(skillTestElement.querySelector(".score__percentage")),
                     title : getText(skillTestElement.querySelector(".skill-tests__title")),
                     link : "https://www.codechef.com/" + skillTestElement.querySelector("a").getAttribute("href"),
                     attemptDate : getText(skillTestElement.querySelector(".skill-tests__description")).split(" ").splice(2,2).join(" "),
-                }
-            });
+                };
+            }) : [];
 
-            // Badges
-            const badges = Array.from(badgesElement[1].querySelectorAll(".badge")).map((badge) => {
+            // // Badges
+            const badges = badgesElement.map((badge) => {
                 return {
                     badgeImage : badge.querySelector("img").getAttribute("src"),
-                    badgeTitle : getText(badge.querySelector(".badge__title")).split("-")[0].trim(),
-                    badgeLevel : getText(badge.querySelector(".badge__title")).split("-")[1].trim(),
+                    badgeTitle : getText(badge.querySelector(".badge__title")).split("-")[0]?.trim(),
+                    badgeLevel : getText(badge.querySelector(".badge__title")).split("-")[1]?.trim(),
                     badgeDescription: getText(badge.querySelector(".badge__description")),
                 }
             })
 
+            const problemsSolved = problemsSolvedElement ? getText(problemsSolvedElement.at(-1)).split(" ").at(-1) : "NA";
+            const profileImage = profileImageElement?.getAttribute("src") || "NA";
+            const currentRating = getText(currentRatingElement);
+            const highestRating = getText(highestRatingElement);
 
             const codechefData = {
-                username : getText(userNameElement),
-                problemsSolved : parseInt(getText(problemsSolvedElement.at(-1)).split(" ").at(-1)),
-                profileImage : profileImageElement.getAttribute("src"),
-                currentRating : parseInt(getText(currentRatingElement)),
-                contestDiv : parseInt(getText(contestDivElement).at(-2)),
+                username : username,
+                problemsSolved : problemsSolved == "NA" ? "NA" : parseInt(problemsSolved),
+                profileImage : profileImage,
+                currentRating : currentRating == "NA" ? "NA" : parseInt(currentRating),
+                highestRating : highestRating == "NA" ? "NA" : parseInt(getText(highestRatingElement).split(" ").at(-1).slice(0, -1)),
+                contestDiv : contestDivElement.length>=1 ? parseInt(getText(contestDivElement[1]).at(-2)) : "NA",
                 contestStars : contestStarsElement.length,
-                highestRating : parseInt(getText(highestRatingElement).split(" ").at(-1).slice(0, -1)),
+                leagueBadgeElement : leagueBadgeElement?.getAttribute("src"),
+                globalRank : RankElements.length ? getText(RankElements[0]) : "NA",
+                countryRank : RankElements.length > 1 ? getText(RankElements[1]) : "NA",
                 skillTests : skillTests,
                 badges : badges,
             }
 
             return codechefData;
-        });
+        }, username);
         res.json(data);
         browser.close();
     } catch (error) {
