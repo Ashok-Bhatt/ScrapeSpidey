@@ -18,7 +18,7 @@ const configChromeDriver = async () => {
         });
     } else {
         return await puppeteer.connect({
-            browserWSEndpoint: `wss://production-sfo.browserless.io?token=${BROWSERLESS_TOKEN}&--disable-http2=true&--disable-features=IsolateOrigins,site-per-process`,
+            browserWSEndpoint: `wss://production-sfo.browserless.io?token=${BROWSERLESS_TOKEN}&--disable-http2=true&--disable-features=IsolateOrigins,site-per-process&stealth`,
         });
 
     }
