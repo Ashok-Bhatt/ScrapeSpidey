@@ -20,7 +20,13 @@ const getUserInfo = async (req, res) => {
 
         page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
+        await page.setExtraHTTPHeaders({
+            'accept-language': 'en-US,en;q=0.9',
+            'sec-ch-ua': '"Chromium";v="120", "Not=A?Brand";v="99"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+        });
+        await page.goto(url, { waitUntil: 'networkidle2', timeout : 2*60*1000 });
         await page.waitForSelector('.profile-user-name', { timeout: 10000 });
 
         const data = await page.evaluate((username) => {
