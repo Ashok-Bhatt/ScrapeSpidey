@@ -1,6 +1,9 @@
 import puppeteerCore from "puppeteer-core";
-import puppeteer from "puppeteer"
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import {BROWSERLESS_TOKEN, NODE_ENV } from "../config.js";
+
+puppeteer.use(StealthPlugin());
 
 const configChromeDriver = async () => {
     if (NODE_ENV == "development"){
@@ -14,7 +17,7 @@ const configChromeDriver = async () => {
             ]
         });
     } else {
-        return await puppeteerCore.connect({
+        return await puppeteer.connect({
             browserWSEndpoint: `wss://production-sfo.browserless.io?token=${BROWSERLESS_TOKEN}&--disable-http2=true&--disable-features=IsolateOrigins,site-per-process`,
         });
 
