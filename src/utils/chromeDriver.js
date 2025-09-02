@@ -1,4 +1,3 @@
-import puppeteerCore from "puppeteer-core";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import {BROWSERLESS_TOKEN, NODE_ENV } from "../config.js";
