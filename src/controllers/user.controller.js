@@ -76,7 +76,7 @@ const login = async (req, res) => {
 const logout = (req, res) => {
     try {
         res.cookie("jwt", "", {maxAge : 0});
-        res.status(200).json({message: "Logged out successfully"});
+        return res.status(200).json({message: "Logged out successfully"});
     } catch (error){
         console.log("Error while logout:", error.message);
         return res.status(500).json({message : "Something Went Wrong! Logout Unsuccessful!"});

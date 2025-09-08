@@ -4,7 +4,7 @@ import { TOKEN_SECRET } from "../config.js";
 
 const protectRoute = async (req, res, next) => {
     try {
-        const token = req.cookies.jwt || req.body.jwt;
+        const token = req?.cookies.jwt || req.header("Authorization")?.replace("Bearer ", "");
         if (!token) return res.status(401).json({message : "Unauthenticated User! Token not provided"});
 
         const decodedToken = jwt.verify(token, TOKEN_SECRET);

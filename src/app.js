@@ -9,14 +9,18 @@ import { router as hackerrankRouter } from "./routes/hackerrank.route.js";
 import { router as code360Router } from "./routes/code360.route.js";
 import { router as interviewbitRouter } from "./routes/interviewbit.route.js"
 import { router as userRouter } from "./routes/user.route.js";
+import { CLIENT_URL } from "./config.js"
 
 const app = express();
 
-app.use(cors({origin : "*",}));
 app.use(cookieParser());
 app.use(express.static('public'))
 app.use(express.json());
 app.use(express.urlencoded());
+
+app.use(cors({
+  origin: "*",
+}));
 
 app.use("/api/v1/gfg", GfgRouter);
 app.use("/api/v1/codechef", codechefRouter);

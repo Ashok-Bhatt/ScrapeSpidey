@@ -5,8 +5,7 @@ const PORT = process.env.PORT || 8000;
 const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN;
 const TOKEN_SECRET = process.env.TOKEN_SECRET;
 const MONGODB_URI = process.env.MONGODB_URI;
-
-// console.log(process.env.NODE_ENV, process.env.PORT, process.env.BROWSERLESS_TOKEN, process.env.TOKEN_SECRET, process.env.MONGODB_URI);
+const CLIENT_URL = process.env.CLIENT_URL;
 
 export {
   PORT,
@@ -14,4 +13,5 @@ export {
   BROWSERLESS_TOKEN,
   TOKEN_SECRET,
   MONGODB_URI,
+  CLIENT_URL,
 };
