@@ -1,0 +1,5 @@
+const DAILY_API_POINT_LIMIT = 25
+
+export {
+    DAILY_API_POINT_LIMIT,
+}
