@@ -1,4 +1,3 @@
-import {APIError} from "../utils/APIError.js"
 import {configChromeDriver} from "../utils/chromeDriver.js"
 
 const getUserInfo = async (req, res) => {
@@ -6,7 +5,7 @@ const getUserInfo = async (req, res) => {
     const url = `https://www.geeksforgeeks.org/user/${username}/`;
 
     if (!username) {
-        return new APIError(400, "Username not found");
+        return res.status(400).json({message : "Username not found"});
     }
 
     let browser;
@@ -92,7 +91,7 @@ const getUserSubmissions = async (req, res) => {
     const url = `https://www.geeksforgeeks.org/user/${username}/`;
 
     if (!username){
-        return new APIError(400, "Username not found");
+        return res.status(400).json({message : "Username not found"});
     }
 
     let browser;

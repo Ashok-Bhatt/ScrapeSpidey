@@ -3,8 +3,10 @@ import User from "../models/user.model.js";
 const verifyApiKey = async (req, res, next) => {
     try {
         const apiKey = req.query.apiKey || "";
-        const user = User.findOne({apiKey});
+        console.log(req.query);
+        if (!apiKey) return res.status(401).json({message: "API Key Required!"});
 
+        const user = await User.findOne({apiKey});
         if (user) next();
         else return res.status(401).json({message: "Invalid API Key!"});
     } catch (error) {
