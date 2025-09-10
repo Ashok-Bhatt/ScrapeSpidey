@@ -17,7 +17,6 @@ const getAnalytics = async (req, res, next) => {
             });
         })
 
-        console.log("analytics");
         next();
     } catch (error) {
         console.log("Error in analytics middleware:", error.message);

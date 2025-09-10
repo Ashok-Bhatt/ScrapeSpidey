@@ -24,7 +24,6 @@ const checkLimit = async (req, res, next) => {
             );
         }
 
-        console.log("ratelimiter");
         next();
     } catch (error) {
         console.log("Error in rateLimiter middleware:", error.message);

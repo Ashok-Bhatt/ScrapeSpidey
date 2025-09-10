@@ -8,7 +8,6 @@ const verifyApiKey = async (req, res, next) => {
         const user = await User.findOne({apiKey});
         if (!user) return res.status(401).json({message: "Invalid API Key!"});
 
-        console.log("apikey");
         next();
     } catch (error) {
         console.log("Error in auth middleware:", error.message);

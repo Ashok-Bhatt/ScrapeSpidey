@@ -5,9 +5,14 @@ import apiLogs from "../models/apiLogs.model.js";
 const getDailyApiUsageData = async (req, res) => {
     try{
         const apiKey = req.query.apiKey;
-        const date = req.query.date || new Date.now().toISOString().split("T")[0];
+        const lastDays = req.query.lastDays || 1;
 
-        const dailyUsageData = await ApiPoints.findOne({apiKey, date});
+        if (lastDays > 30) return res.status(400).json({message : "Too long history not allowed"});
+
+        const today = new Date(); 
+        const beginningDay = new Date(today.getTime() - (lastDays - 1) * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+        const dailyUsageData = await ApiPoints.find({apiKey, date: {$gte: beginningDay}});
 
         if (!dailyUsageData){
             return res.status(200).json({
@@ -20,6 +25,7 @@ const getDailyApiUsageData = async (req, res) => {
             return res.status(200).json(dailyUsageData);
         }
     } catch (error) {
+        console.log("Error in analytics controller:", error);
         return res.status(500).json({message: "Something went wrong!"});
     }
 }
@@ -27,14 +33,18 @@ const getDailyApiUsageData = async (req, res) => {
 const getRequestsData = async (req, res) => {
     try{
         const apiKey = req.query.apiKey;
-        const previousInterval = req.query.previousInterval || 30*60*1000;
+        const previousInterval = parseInt(req.query.previousInterval) || 30*60*1000;
 
         const intervalEnding = Date.now();
         const intervalStarting = intervalEnding - previousInterval;
 
-        const requestsData = apiLogs.find({apiKey, createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}});
+        console.log(new Date(intervalStarting));
+        console.log(new Date(intervalEnding));
+
+        const requestsData = await apiLogs.find({apiKey, createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}});
         return res.status(200).json(requestsData);
     } catch (error){
+        console.log("Error in analytics controller:", error);
         return res.status(500).json({message: "Something went wrong!"});
     }
 }
