@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import ApiPoints from "../models/apiPoints.model.js";
 import {DAILY_API_POINT_LIMIT} from "../constants.js"
+import apiLogs from "../models/apiLogs.model.js";
 
 const verifyApiKey = async (req, res, next) => {
     try {
@@ -29,6 +30,20 @@ const verifyApiKey = async (req, res, next) => {
                     { new: true, upsert: true }
                 );
             }
+
+            const startTime = Date.now();
+
+            res.on("finish", async ()=>{
+                const duration = Date.now() - startTime;
+
+                await apiLogs.create({
+                    apiKey : apiKey,
+                    endpoint: req.originalUrl,
+                    statusCode: res.statusCode,
+                    responseTime: duration,
+                    endpointCost: 1,
+                });
+            })
 
             next();
 
