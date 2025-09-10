@@ -76,7 +76,7 @@ const getUserInfo = async (req, res) => {
             };
         });
         
-        res.json(data);
+        res.status(200).json(data);
         browser.close();
     } catch (error) {
         console.log(error.message);

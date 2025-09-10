@@ -10,11 +10,14 @@ const apiPointsSchema = new mongoose.Schema({
         type : String,
         required: true,
     },
-    remainingRequests : {
+    remainingApiPoints : {
         type: Number,
-        required: true,
         default: DAILY_API_POINT_LIMIT,
     },
+    requestsMade: {
+        type: Number,
+        default: 0,
+    }
 });
 
 apiPointsSchema.index({ apiKey: 1, date: 1 }, { unique: true });
