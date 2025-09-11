@@ -2,7 +2,7 @@ import apiLogs from "../models/apiLogs.model.js";
 
 const getAnalytics = async (req, res, next) => {
     try {
-        const apiKey = req.query.apiKey;
+        const apiKey = req.query.apiKey || req.user.apiKey;
         const startTime = Date.now();
 
         res.on("finish", async ()=>{
