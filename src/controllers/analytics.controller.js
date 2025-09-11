@@ -38,9 +38,6 @@ const getRequestsData = async (req, res) => {
         const intervalEnding = Date.now();
         const intervalStarting = intervalEnding - previousInterval;
 
-        console.log(new Date(intervalStarting));
-        console.log(new Date(intervalEnding));
-
         const requestsData = await apiLogs.find({apiKey, createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}});
         return res.status(200).json(requestsData);
     } catch (error){

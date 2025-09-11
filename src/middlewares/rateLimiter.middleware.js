@@ -6,25 +6,27 @@ const checkLimit = async (req, res, next) => {
         const apiKey = req.query.apiKey;
         const currentDate = new Date().toISOString().split("T")[0];
 
-        let apiPointsModel = await ApiPoints.findOneAndUpdate(
-            { apiKey, date: currentDate },
-            { $inc: { remainingApiPoints: -1, requestsMade: 1 }, },
-            { new: true }
-        );
+        let apiPointsModel = await ApiPoints.findOne({ apiKey, date: currentDate});
 
-        // If still no requests left
-        if (apiPointsModel && apiPointsModel.remainingApiPoints < 0) return res.status(429).json({ message: "Rate limit exceeded. Try again tomorrow." });
+        if (apiPointsModel){
+            if (apiPointsModel.remainingApiPoints < 0) return res.status(429).json({ message: "Rate limit exceeded. Try again tomorrow." });
 
-        // If no document exists, create it with daily limit - 1
-        if (!apiPointsModel) {
-            apiPointsModel = await ApiPoints.findOneAndUpdate(
-                { apiKey, date: currentDate },
-                { $setOnInsert: { remainingApiPoints: DAILY_API_POINT_LIMIT - 1, requestsMade: 1 } },
-                { new: true, upsert: true }
-            );
+            apiPointsModel.remainingApiPoints = apiPointsModel.remainingApiPoints-1;
+            apiPointsModel.requestsMade++;
+            apiPointsModel.save();
+            
+            next();
+        } else {
+            apiPointsModel = await ApiPoints.create({
+                apiKey, 
+                date: currentDate,
+                remainingApiPoints : DAILY_API_POINT_LIMIT - 1,
+                requestsMade: 1,
+            })
+
+            if (!apiPointsModel) return res.status(400).json({message: "Something went wrong!"});
+            next();
         }
-
-        next();
     } catch (error) {
         console.log("Error in rateLimiter middleware:", error.message);
         return res.status(500).json({message: "Internal Server Error!"});
