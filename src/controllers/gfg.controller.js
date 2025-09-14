@@ -14,7 +14,7 @@ const getUserInfo = async (req, res) => {
         browser = await configChromeDriver();
 
         if (!browser) {
-            res.status(500).json({ error: "Failed to setup browser" });
+            return res.status(500).json({ error: "Failed to setup browser" });
         }
 
         page = await browser.newPage();
@@ -76,11 +76,11 @@ const getUserInfo = async (req, res) => {
             };
         });
         
-        res.status(200).json(data);
+        return res.status(200).json(data);
         browser.close();
     } catch (error) {
         console.log(error.message);
-        res.status(500).json({ error: "Failed to fetch data", details: error.message });
+        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }
@@ -100,7 +100,7 @@ const getUserSubmissions = async (req, res) => {
         browser = await configChromeDriver();
 
         if (!browser){
-            res.status(500).json({ error: "Failed to setup browser"});
+            return res.status(500).json({ error: "Failed to setup browser"});
         }
 
         page = await browser.newPage();
@@ -112,10 +112,9 @@ const getUserSubmissions = async (req, res) => {
             return JSON.parse(document.querySelector("#__NEXT_DATA__").textContent)["props"]["pageProps"]["heatMapData"]["result"];
         });
 
-        res.status(200).json(data);
-        browser.close();
+        return res.status(200).json(data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch data", details: error.message });
+        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }

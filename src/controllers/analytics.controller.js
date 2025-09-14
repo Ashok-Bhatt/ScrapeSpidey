@@ -1,6 +1,6 @@
 import ApiPoints from "../models/apiPoints.model.js";
-import {DAILY_API_POINT_LIMIT,} from "../constants.js"
 import apiLogs from "../models/apiLogs.model.js";
+import {DAILY_API_POINT_LIMIT} from "../constants.js"
 
 const getDailyApiUsageData = async (req, res) => {
     try{
@@ -10,9 +10,24 @@ const getDailyApiUsageData = async (req, res) => {
         if (lastDays > 30) return res.status(400).json({message : "Too long history not allowed"});
 
         const today = new Date(); 
-        const beginningDay = new Date(today.getTime() - (lastDays - 1) * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+        const dailyUsageData = [];
 
-        const dailyUsageData = await ApiPoints.find({apiKey, date: {$gte: beginningDay}});
+        for (let i=0; i<lastDays; i++){
+            const date = new Date(today.getTime() - i*24*60*60*1000).toISOString().split("T")[0];
+            const dateData = await ApiPoints.findOne({apiKey, date});
+            if (dateData){
+                dailyUsageData.push(dateData);
+            } else {
+                const newDateData = await ApiPoints.create({    
+                    apiKey, 
+                    date,
+                    remainingApiPoints : DAILY_API_POINT_LIMIT,
+                    requestsMade: 0,
+                })
+                dailyUsageData.push(newDateData);
+            }
+        }
+
         return res.status(200).json(dailyUsageData);
     } catch (error) {
         console.log("Error in analytics controller:", error);
@@ -31,7 +46,12 @@ const getRequestsData = async (req, res) => {
         const intervalEnding = Date.now();
         const intervalStarting = intervalEnding - previousInterval;
 
-        const requestsData = await apiLogs.find({apiKey, createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}});
+        let requestsData;
+        if (req.user.isAdmin){
+            requestsData = await apiLogs.find({createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}});
+        } else {
+            requestsData = await apiLogs.find({apiKey, createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}, endpoint : {$not: /^\/api\/v1\/analytics/}});
+        }
         return res.status(200).json(requestsData);
     } catch (error){
         console.log("Error in analytics controller:", error);

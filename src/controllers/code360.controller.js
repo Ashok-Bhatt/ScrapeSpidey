@@ -14,7 +14,7 @@ const getUserInfo = async (req, res) => {
         browser = await configChromeDriver();
 
         if (!browser){
-            res.status(500).json({ error: "Failed to setup browser"});
+            return res.status(500).json({ error: "Failed to setup browser"});
         }
 
         page = await browser.newPage();
@@ -132,11 +132,10 @@ const getUserInfo = async (req, res) => {
             return code360Data;
         }, username);
 
-        res.json(data);
-        browser.close();
+        return res.status(200).json(data);
     } catch (error) {
         console.log(error.message);
-        res.status(500).json({ error: "Failed to fetch data", details: error.message });
+        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }

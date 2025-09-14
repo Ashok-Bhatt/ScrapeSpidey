@@ -6,11 +6,11 @@ export const generateToken = (userId, res) => {
     const token = jwt.sign(
         {userId},
         TOKEN_SECRET,
-        { expiresIn : "1h" },
+        { expiresIn : "15d" },
     );
 
     res.cookie("jwt", token, {
-        maxAge: 60 * 60 * 1000,
+        maxAge: 15 * 24 * 60 * 60 * 1000,
         httpOnly : true,
         sameSite : "Lax",
         secure: NODE_ENV == "production",
