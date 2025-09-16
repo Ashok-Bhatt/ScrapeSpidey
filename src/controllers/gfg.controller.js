@@ -19,14 +19,13 @@ const getUserInfo = async (req, res) => {
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 2 * 60 * 1000 });
         await page.waitForSelector('.educationDetails_head_left--text__tgi9I', { timeout: 5000 });
 
-        const data = await page.evaluate((includeContests) => {
+        const data = await page.evaluate((username, includeContests) => {
 
             const getText = (element) => element?.textContent || "NA";
             const getTitleCase = (word) => word.charAt(0).toUpperCase() + word.slice(1);
 
             const difficultyTags = ["School", "Basic", "Easy", "Medium", "Hard"];
 
-            const usernameElement = document.querySelector(".profilePicSection_head_userHandle__oOfFy");
             const avatarElement = document.querySelector(".profilePicSection_head_img__1GLm0 > span > img");
             const institutionNameElement = document.querySelector(".educationDetails_head_left--text__tgi9I");
             const institutionRankElement = document.querySelector(".educationDetails_head_left_userRankContainer--text__wt81s b");
@@ -35,7 +34,6 @@ const getUserInfo = async (req, res) => {
             const codingScoreElement = document.querySelectorAll(".scoreCard_head_left--score__oSi_x")[0];
             const totalProblemsSolvedElement = document.querySelectorAll(".scoreCard_head_left--score__oSi_x")[1];
 
-            const username = getText(usernameElement);
             const avatar = avatarElement?.getAttribute("src") || "NA";
             const institutionName = getText(institutionNameElement);
             const institutionRank = getText(institutionRankElement);
@@ -65,7 +63,7 @@ const getUserInfo = async (req, res) => {
                 }
             }
 
-            const response = {
+            const gfgData = {
                 username : username,
                 avatar: avatarUrl,
                 institutionName : institutionName,
@@ -104,10 +102,10 @@ const getUserInfo = async (req, res) => {
                     contestTotalParticipants: contestTotalParticipants=="NA" ? "NA" : parseInt(contestTotalParticipants.split(" ")[5]),
                 }
 
-                response.contestData = contestData;
+                gfgData.contestData = contestData;
             }
 
-            return response;
+            return gfgData;
             
         }, includeContests);
         

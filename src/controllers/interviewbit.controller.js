@@ -38,9 +38,7 @@ const getUserInfo = async (req, res) => {
             const wrongAnswersElement = Array.from(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--wrong_answer span"))[1];
             const othersElement = Array.from(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--others span"))[1];
 
-
             const badgesElement = Array.from(document.querySelectorAll(".profile-badge-progress-tile"));
-
 
             const totalScore = getText(problemsSolvedElement[0]);
             const totalCoins = getText(problemsSolvedElement[1]);
@@ -60,13 +58,10 @@ const getUserInfo = async (req, res) => {
             const others = getText(othersElement);
             
             const problemsSolved = {
-                totalProblems : totalProblems != "NA" ? parseInt(totalProblems) : 0,
-                solvedProblems : {
-                    easy : easyProblems != "NA" ? parseInt(easyProblems) : 0,
-                    medium : mediumProblems != "NA" ? parseInt(mediumProblems) : 0,
-                    hard : hardProblems != "NA" ? parseInt(hardProblems) : 0,
-                    total : totalSolvedProblems != "NA" ? parseInt(totalSolvedProblems) : 0,
-                }
+                Easy : easyProblems != "NA" ? parseInt(easyProblems) : 0,
+                Medium : mediumProblems != "NA" ? parseInt(mediumProblems) : 0,
+                Hard : hardProblems != "NA" ? parseInt(hardProblems) : 0,
+                Total : totalSolvedProblems != "NA" ? parseInt(totalSolvedProblems) : 0,
             }
 
             const badges = badgesElement.map((badge) => {
@@ -84,7 +79,6 @@ const getUserInfo = async (req, res) => {
                 others : others != "NA" ? parseInt(others) : 0,
             }
 
-
             const interviewbitData = {
                 username : username,
                 totalScore: totalScore != "NA" ? parseInt(totalScore) : 0,
@@ -94,6 +88,7 @@ const getUserInfo = async (req, res) => {
                 universityRank : universityRank != "NA" ? parseInt(universityRank) : null,
                 joinedOn : joinedOn,
                 timeSpent : timeSpent,
+                totalProblems : parseInt(totalProblems),
                 problemsSolved : problemsSolved,
                 badges: badges,
                 submissionAnalysis : submissionAnalysis,
@@ -103,7 +98,7 @@ const getUserInfo = async (req, res) => {
         }, username);
         
         return res.status(200).json(data);
-        browser.close();
+        
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({ error: "Failed to fetch data", details: error.message });

@@ -58,7 +58,7 @@ const getUserInfo = async (req, res) => {
         }, username);
 
         return res.status(200).json(data);
-        browser.close();
+        
     } catch (error) {
         console.log(error.message);
         return res.status(500).json({ error: "Failed to fetch data", details: error.message });
