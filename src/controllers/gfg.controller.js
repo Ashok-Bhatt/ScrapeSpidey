@@ -2,7 +2,7 @@ import {configChromeDriver} from "../utils/chromeDriver.js"
 
 const getUserInfo = async (req, res) => {
     const username = req.params.user;
-    const includeContests = req.query.includeContests || false;
+    const includeContests = req.query.includeContests==="true";
     const url = `https://www.geeksforgeeks.org/user/${username}/`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
@@ -16,8 +16,8 @@ const getUserInfo = async (req, res) => {
 
         page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 2 * 60 * 1000 });
-        await page.waitForSelector('.educationDetails_head_left--text__tgi9I', { timeout: 5000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
+        await page.waitForSelector('.educationDetails_head_left--text__tgi9I', { timeout: 10000 });
 
         const data = await page.evaluate((username, includeContests) => {
 
@@ -75,7 +75,8 @@ const getUserInfo = async (req, res) => {
                 problemsSolved : problemsSolved,
             };
 
-            if (includeContests==="true"){
+            if (includeContests===true){
+
                 const contestRatingElement = document.querySelectorAll(".contestDetailsCard_head_detail--text__NG_ae")[0];
                 const contestLevelElement = document.querySelectorAll(".contestDetailsCard_head_detail--text__NG_ae")[1];
                 const contestRankingElement = document.querySelectorAll(".contestDetailsCard_head_detail--text__NG_ae")[2];
@@ -107,7 +108,7 @@ const getUserInfo = async (req, res) => {
 
             return gfgData;
             
-        }, includeContests);
+        }, username, includeContests);
         
         return res.status(200).json(data);
     } catch (error) {
@@ -122,23 +123,19 @@ const getUserSubmissions = async (req, res) => {
     const username = req.params.user;
     const url = `https://www.geeksforgeeks.org/user/${username}/`;
 
-    if (!username){
-        return res.status(400).json({message : "Username not found"});
-    }
+    if (!username) return res.status(400).json({message : "Username not found"});
 
     let browser;
     let page;
     try {
         browser = await configChromeDriver();
 
-        if (!browser){
-            return res.status(500).json({ error: "Failed to setup browser"});
-        }
+        if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
 
         page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
-        await page.waitForSelector('.heatMapCard_head__QlR7_', { timeout: 15000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 10000 });
+        await page.waitForSelector('.heatMapCard_head__QlR7_', { timeout: 10000 });
 
         const data = await page.evaluate(() => {
             return JSON.parse(document.querySelector("#__NEXT_DATA__").textContent)["props"]["pageProps"]["heatMapData"]["result"];

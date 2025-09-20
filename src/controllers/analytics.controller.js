@@ -46,12 +46,7 @@ const getRequestsData = async (req, res) => {
         const intervalEnding = Date.now();
         const intervalStarting = intervalEnding - previousInterval;
 
-        let requestsData;
-        if (req.user.isAdmin){
-            requestsData = await apiLogs.find({createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}});
-        } else {
-            requestsData = await apiLogs.find({apiKey, createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}, endpoint : {$not: /^\/api\/v1\/analytics/}});
-        }
+        let requestsData = await apiLogs.find({apiKey, createdAt : {$gt : new Date(intervalStarting), $lt: new Date(intervalEnding)}, endpoint : {$not: /^\/api\/v1\/analytics/}});
         return res.status(200).json(requestsData);
     } catch (error){
         console.log("Error in analytics controller:", error);

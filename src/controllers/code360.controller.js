@@ -3,19 +3,16 @@ import {configChromeDriver} from "../utils/chromeDriver.js"
 const getUserInfo = async (req, res) => {
     const username = req.params.user;
     const url = `https://www.naukri.com/code360/profile/${username}/`;
+    const includeContests = req.query.includeContests==="true";
 
-    if (!username){
-        return res.status(400).json({message : "Username not found"});
-    }
+    if (!username) return res.status(400).json({message : "Username not found"});
 
     let browser;
     let page;
     try {
         browser = await configChromeDriver();
 
-        if (!browser){
-            return res.status(500).json({ error: "Failed to setup browser"});
-        }
+        if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
 
         page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
@@ -25,10 +22,10 @@ const getUserInfo = async (req, res) => {
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Windows"',
         });
-        await page.goto(url, { waitUntil: 'networkidle2', timeout : 2*60*1000 });
+        await page.goto(url, { waitUntil: 'networkidle2', timeout : 10000 });
         await page.waitForSelector('.profile-user-name', { timeout: 10000 });
 
-        const data = await page.evaluate((username) => {
+        const data = await page.evaluate((username, includeContests) => {
 
             const CODE360_DOMAIN = "https://www.naukri.com/code360/profile";
 
@@ -40,12 +37,6 @@ const getUserInfo = async (req, res) => {
             const profileViewCountElement = document.querySelector(".profile-view-counter .count");
             const submissionCountElement = document.querySelector(".profile-user-stats-graph-container .left.zen-typo-heading-5");
             const streakElement = Array.from(document.querySelectorAll(".day-count-text"));
-            const contestRatingElement = document.querySelector(".rating-info .rating");
-            const contestRankingElement = document.querySelector(".ranking-info .rating");
-            const contestTopPercentageElement = document.querySelector(".ranking-info .zen-typo-caption-medium");
-            const contestBadgeElement = document.querySelector(".ranking img");
-            const contestSubmissionElement = document.querySelector(".submission-details-left span");
-            const contestAttendedElement = document.querySelector(".submission-details");
             const certificatesElement = Array.from(document.querySelectorAll(".certificate-list .btn-ent"));
             const totalDsaProblemsCountElement = document.querySelector(".problems-solved .total")
             const dsaProblemsCountElement = Array.from(document.querySelectorAll(".problems-solved .difficulty"));
@@ -58,8 +49,6 @@ const getUserInfo = async (req, res) => {
             const codingProblemsCount = getText(problemsCountElement);
             const currentStreak = getText(streakElement[0]);
             const maxStreak = getText(streakElement[1]);
-
-            const certificates = certificatesElement.map((certificate)=> getText(certificate));
 
             const totalDsaProblemsCount = getText(totalDsaProblemsCountElement);
             const totalWebDevProblemsCount = getText(totalWebDevProblemsCountElement);
@@ -104,16 +93,6 @@ const getUserInfo = async (req, res) => {
                 },
             }
 
-            const contestData = contestAttendedElement ? {
-                contestRating : parseInt(getText(contestRatingElement)),
-                contestRanking : getText(contestRankingElement).trim(),
-                contestTopPercentage : parseInt(getText(contestTopPercentageElement).split(" ").at(-2).slice(0,-1)),
-                contestBadge : contestBadgeElement?.getAttribute("src"),
-                contestSubmissions : parseInt(getText(contestSubmissionElement)),
-                contestAttended : parseInt(getText(contestAttendedElement).split(" ")[0]),
-            } : null;
-
-
             const code360Data = {
                 username: username,
                 profileImage : profileImageElement?.getAttribute("src"),
@@ -122,15 +101,31 @@ const getUserInfo = async (req, res) => {
                 submissionCount : parseInt(getText(submissionCountElement)),
                 currentStreak : parseInt(currentStreak.split(" ")[1]),
                 maxStreak : parseInt(maxStreak.split(" ")[1]),
-                contestData : contestData,
-                // certificates : certificates,
                 problemsCount : problemsCount,
-                contestData : contestData,
-
             };
 
+            if (includeContests){
+                const contestRatingElement = document.querySelector(".rating-info .rating");
+                const contestRankingElement = document.querySelector(".ranking-info .rating");
+                const contestTopPercentageElement = document.querySelector(".ranking-info .zen-typo-caption-medium");
+                const contestBadgeElement = document.querySelector(".ranking-icon");
+                const contestSubmissionElement = document.querySelector(".submission-details-left span");
+                const contestAttendedElement = document.querySelector(".submission-details");
+
+                const contestData = contestAttendedElement ? {
+                    contestRating : parseInt(getText(contestRatingElement)),
+                    contestRanking : getText(contestRankingElement).trim(),
+                    contestTopPercentage : parseInt(getText(contestTopPercentageElement).split(" ").at(-2).slice(0,-1)),
+                    contestBadge : contestBadgeElement?.getAttribute("src"),
+                    contestSubmissions : parseInt(getText(contestSubmissionElement)),
+                    contestAttended : parseInt(getText(contestAttendedElement).split(" ")[0]),
+                } : null;
+
+                code360Data.contestData = contestData;
+            }
+
             return code360Data;
-        }, username);
+        }, username, includeContests);
 
         return res.status(200).json(data);
         

@@ -2,7 +2,7 @@ import {configChromeDriver} from "../utils/chromeDriver.js"
 
 const getUserInfo = async (req, res) => {
     const username = req.params.user;
-    const includeContests = req.query.includeContests || false;
+    const includeContests = req.query.includeContests==="true";
     const url = `https://www.codechef.com/users/${username}/`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
@@ -16,8 +16,8 @@ const getUserInfo = async (req, res) => {
 
         page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
-        await page.waitForSelector('.user-details-container.plr10', { timeout: 5000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 10000 });
+        await page.waitForSelector('.user-details-container.plr10', { timeout: 10000 });
 
         const data = await page.evaluate((username, includeContests) => {
 
@@ -66,7 +66,7 @@ const getUserInfo = async (req, res) => {
                 badges : badges,
             }
 
-            if (includeContests){
+            if (includeContests === true){
                 const currentRatingElement = document.querySelector(".rating-number");
                 const highestRatingElement = document.querySelector(".rating-header>small");
                 const contestDivElement = Array.from(document.querySelectorAll(".rating-header>div"));
@@ -105,9 +105,7 @@ const getUserSubmissions = async (req, res) => {
     const username = req.params.user;
     const url = `https://www.codechef.com/users/${username}/`;
 
-    if (!username){
-        return res.status(400).json({message : "Username not found"});
-    }
+    if (!username) return res.status(400).json({message : "Username not found"});
 
     let browser;
     let page;
@@ -120,8 +118,8 @@ const getUserSubmissions = async (req, res) => {
 
         page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
-        await page.waitForSelector('.user-details-container.plr10', { timeout: 5000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 10000 });
+        await page.waitForSelector('.user-details-container.plr10', { timeout: 10000 });
 
         const data = await page.evaluate(() => {
 

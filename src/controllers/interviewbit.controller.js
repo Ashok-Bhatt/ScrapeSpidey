@@ -4,23 +4,19 @@ const getUserInfo = async (req, res) => {
     const username = req.params.user;
     const url = `https://www.interviewbit.com/profile/${username}/`;
 
-    if (!username){
-        return res.status(400).json({message : "Username not found"});
-    }
+    if (!username) return res.status(400).json({message : "Username not found"});
 
     let browser;
     let page;
     try {
         browser = await configChromeDriver();
 
-        if (!browser){
-            return res.status(500).json({ error: "Failed to setup browser"});
-        }
+        if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
 
         page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 2*60*1000 });
-        await page.waitForSelector('.recharts-surface', { timeout: 15000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 10000 });
+        await page.waitForSelector('.recharts-surface', { timeout: 10000 });
 
         const data = await page.evaluate((username) => {
 
