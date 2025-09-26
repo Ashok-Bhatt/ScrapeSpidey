@@ -1,6 +1,19 @@
 import mongoose from "mongoose";
+import { DAILY_API_POINT_LIMIT } from "../constants.js";
 
 const userSchema = new mongoose.Schema({
+    name : {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    profilePic: {
+        type: String,
+    },
+    bio: {
+        type: String,
+        trim: true,
+    },
     email : {
         type: String,
         unique: true,
@@ -14,6 +27,10 @@ const userSchema = new mongoose.Schema({
     apiKey : {
         type: String,
         required: true,
+    },
+    apiPointsDailyLimit: {
+        type: Number,
+        default: DAILY_API_POINT_LIMIT,
     },
     isAdmin : {
         type: Boolean,

@@ -4,14 +4,15 @@ import {DAILY_API_POINT_LIMIT} from "../constants.js"
 const checkLimit = async (req, res, next) => {
     try{
         const apiKey = req.query.apiKey;
+        const dailyApiPointsLimit = req.apiPointsDailyLimit;
         const currentDate = new Date().toISOString().split("T")[0];
 
         let apiPointsModel = await ApiPoints.findOne({ apiKey, date: currentDate});
 
         if (apiPointsModel){
-            if (apiPointsModel.remainingApiPoints < 0) return res.status(429).json({ message: "Rate limit exceeded. Try again tomorrow." });
+            if (apiPointsModel.apiPointsUsed >= dailyApiPointsLimit) return res.status(429).json({ message: "Rate limit exceeded. Try again tomorrow." });
 
-            apiPointsModel.remainingApiPoints = apiPointsModel.remainingApiPoints-1;
+            apiPointsModel.apiPointsUsed = apiPointsModel.apiPointsUsed + 1;
             apiPointsModel.requestsMade++;
             apiPointsModel.save();
             
@@ -20,7 +21,7 @@ const checkLimit = async (req, res, next) => {
             apiPointsModel = await ApiPoints.create({
                 apiKey, 
                 date: currentDate,
-                remainingApiPoints : DAILY_API_POINT_LIMIT - 1,
+                apiPointsUsed : 1,
                 requestsMade: 1,
             })
 

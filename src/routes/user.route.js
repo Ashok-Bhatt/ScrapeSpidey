@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, createAccount, logout, checkAuth } from "../controllers/user.controller.js";
+import { login, createAccount, logout, checkAuth, changePassword, updateUserInfo } from "../controllers/user.controller.js";
 import {protectRoute} from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -9,7 +9,9 @@ router.post("/signup", createAccount);
 router.post("/logout", logout);
 
 // Protected routes
-router.get("/auth/check", protectRoute, checkAuth);
+router.get("/check", protectRoute, checkAuth);
+router.patch("/password", protectRoute, changePassword);
+router.patch("/", protectRoute, updateUserInfo);
 
 export {
     router,

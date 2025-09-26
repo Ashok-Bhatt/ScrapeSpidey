@@ -8,6 +8,7 @@ const verifyApiKey = async (req, res, next) => {
         const user = await User.findOne({apiKey});
         if (!user) return res.status(401).json({message: "Invalid API Key!"});
 
+        req.apiPointsDailyLimit = user.apiPointsDailyLimit;
         next();
     } catch (error) {
         console.log("Error in api middleware:", error.message);

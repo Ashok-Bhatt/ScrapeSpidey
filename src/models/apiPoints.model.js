@@ -10,9 +10,9 @@ const apiPointsSchema = new mongoose.Schema({
         type : String,
         required: true,
     },
-    remainingApiPoints : {
+    apiPointsUsed : {
         type: Number,
-        default: DAILY_API_POINT_LIMIT,
+        default: 0,
     },
     requestsMade: {
         type: Number,
