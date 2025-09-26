@@ -31,6 +31,7 @@ const getDailyApiUsageData = async (req, res) => {
         return res.status(200).json(dailyUsageData);
     } catch (error) {
         console.log("Error in analytics controller:", error);
+        console.log(error.stack);
         return res.status(500).json({message: "Something went wrong!"});
     }
 }
@@ -50,6 +51,7 @@ const getRequestsData = async (req, res) => {
         return res.status(200).json(requestsData);
     } catch (error){
         console.log("Error in analytics controller:", error);
+        console.log(error.stack);
         return res.status(500).json({message: "Something went wrong!"});
     }
 }

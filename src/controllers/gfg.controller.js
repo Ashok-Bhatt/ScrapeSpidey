@@ -1,4 +1,4 @@
-import {configChromeDriver} from "../utils/chromeDriver.js"
+import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
 
 const getUserInfo = async (req, res) => {
     const username = req.params.user;
@@ -9,15 +9,12 @@ const getUserInfo = async (req, res) => {
 
     let browser;
     let page;
+    
     try {
         browser = await configChromeDriver();
-
         if (!browser) return res.status(500).json({ error: "Failed to setup browser" });
 
-        page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 10000 });
-        await page.waitForSelector('.educationDetails_head_left--text__tgi9I', { timeout: 10000 });
+        page = await configBrowserPage(browser, url, 'domcontentloaded', '.educationDetails_head_left--text__tgi9I', 30000, 30000);
 
         const data = await page.evaluate((username, includeContests) => {
 
@@ -113,6 +110,7 @@ const getUserInfo = async (req, res) => {
         return res.status(200).json(data);
     } catch (error) {
         console.log(error.message);
+        console.log(error.stack);
         return res.status(500).json({ error: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
@@ -127,23 +125,22 @@ const getUserSubmissions = async (req, res) => {
 
     let browser;
     let page;
+    
     try {
         browser = await configChromeDriver();
-
         if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
 
-        page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout : 10000 });
-        await page.waitForSelector('.heatMapCard_head__QlR7_', { timeout: 10000 });
-
+        page = await configBrowserPage(browser, url, 'domcontentloaded', '.heatMapCard_head__QlR7_', 30000, 30000);
+    
         const data = await page.evaluate(() => {
             return JSON.parse(document.querySelector("#__NEXT_DATA__").textContent)["props"]["pageProps"]["heatMapData"]["result"];
         });
 
         return res.status(200).json(data);
     } catch (error) {
-        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
+           console.log(error.message);
+           console.log(error.stack);
+           return res.status(500).json({ error: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }
