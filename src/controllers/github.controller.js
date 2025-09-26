@@ -26,7 +26,8 @@ const getGithubBadges = async (req, res) => {
         await page.waitForSelector('.js-profile-editable-replace', { timeout: 30000 });
 
         const data = await page.evaluate(() => {
-            const githubBadgesElement = Array.from(document.querySelectorAll(".achievement-badge-sidebar"));
+            const githubBadgesContainerElement = document.querySelector(".js-profile-editable-replace div.color-border-muted");
+            const githubBadgesElement = Array.from(githubBadgesContainerElement.querySelectorAll("img"));
             return githubBadgesElement.map((badgeElement)=>badgeElement.getAttribute("src"));
         });
 

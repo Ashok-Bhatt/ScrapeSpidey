@@ -1,5 +1,5 @@
 import ApiPoints from "../models/apiPoints.model.js";
-import {DAILY_API_POINT_LIMIT} from "../constants.js"
+import {getApiCost} from "../utils/apiCost.js";
 
 const checkLimit = async (req, res, next) => {
     try{
@@ -12,16 +12,22 @@ const checkLimit = async (req, res, next) => {
         if (apiPointsModel){
             if (apiPointsModel.apiPointsUsed >= dailyApiPointsLimit) return res.status(429).json({ message: "Rate limit exceeded. Try again tomorrow." });
 
-            apiPointsModel.apiPointsUsed = apiPointsModel.apiPointsUsed + 1;
+            const apiPointsCost = getApiCost(req.originalUrl);
+
+            apiPointsModel.apiPointsUsed = apiPointsModel.apiPointsUsed + apiPointsCost;
             apiPointsModel.requestsMade++;
             apiPointsModel.save();
             
             next();
         } else {
+
+            const apiPointsCost = getApiCost(req.originalUrl);
+            console.log(apiPointsCost);
+
             apiPointsModel = await ApiPoints.create({
                 apiKey, 
                 date: currentDate,
-                apiPointsUsed : 1,
+                apiPointsUsed : apiPointsCost,
                 requestsMade: 1,
             })
 
@@ -30,6 +36,7 @@ const checkLimit = async (req, res, next) => {
         }
     } catch (error) {
         console.log("Error in rateLimiter middleware:", error.message);
+        console.log(error.stack)
         return res.status(500).json({message: "Internal Server Error!"});
     }
 }
