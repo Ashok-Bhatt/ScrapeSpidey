@@ -3,6 +3,7 @@ import {v4 as uuid} from "uuid"
 import { generateToken } from "../utils/tokenGenerator.js";
 import { isValidEmail, isValidPassword } from "../utils/validation.js";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 
 const createAccount = async (req, res) => {
 
@@ -141,6 +142,67 @@ const updateUserInfo = async (req, res) => {
     }
 };
 
+const changeDailyApiLimit = async (req, res) => {
+    try {
+        const {userId, newApiPointsDailyLimit} = req.body;
+
+        if (!userId) return res.status(400).json({message: "User Id not provided!"});
+        if (!newApiPointsDailyLimit) return res.status(400).json({message: "API Limit not provided!"});
+
+        const user = await User.findById(new mongoose.Types.ObjectId(userId));
+        if (!user) return res.status(404).json({message: "User not found!"});
+
+        user.apiPointsDailyLimit = newApiPointsDailyLimit;
+        user.save();
+
+        return res.status(200).json({message: "Daily API Points Limit Changed!"});
+    } catch (error) {
+        console.log("Error occurred while changing he daily Api limit of the user");
+        console.log(error.stack);
+        return res.status(500).json({message: "Something went wrong while changing Daily API Points Limit!"});
+    }   
+}
+
+const getUsers = async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+        let cursor = null;
+
+        if (req.query.cursor){
+            try {
+                cursor = JSON.parse(decodeURIComponent(req.query.cursor));
+            } catch (error) {
+                return res.status(400).json({message: "Invalid cursor format"});
+            }
+        }
+
+        let query = {};
+        if (cursor){
+            query = {
+                $or : [
+                    {createdAt: {$lt: new Date(cursor.createdAt)}},
+                    {createdAt: new Date(cursor.createdAt), _id: { $lt: new mongoose.Types.ObjectId(cursor._id) }}
+                ]
+            };
+        }
+
+        const users = await User.find(query).sort({createdAt: -1, _id: -1}).limit(limit+1);
+        const hasNext = users.length > limit;
+        const pageUsers = hasNext ? users.slice(0, limit) : users;
+        const nextCursor = hasNext ? pageUsers[pageUsers.length - 1] : null;
+
+        res.status(200).json({
+            users: pageUsers, 
+            nextCursor : nextCursor ? encodeURIComponent(JSON.stringify(nextCursor)) : null,
+            hasNext
+        });
+    } catch (error){
+        console.log("Something went wrong while fetching users", error.message);
+        console.log(error.stack);
+        return null;
+    }
+}
+
 export {
     createAccount,
     login,
@@ -148,4 +210,6 @@ export {
     checkAuth,
     changePassword,
     updateUserInfo,
+    changeDailyApiLimit,
+    getUsers,
 }
