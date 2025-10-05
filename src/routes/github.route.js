@@ -6,6 +6,6 @@ import {getAnalytics} from "../middlewares/analytics.middleware.js";
 
 const router = Router();
 
-router.route("/user/badges/:user").get(verifyApiKey, checkLimit, getAnalytics, getGithubBadges);
+router.route("/user/badges").get(verifyApiKey, checkLimit, getAnalytics, getGithubBadges);
 
 export {router};

@@ -17,6 +17,7 @@ const protectRoute = async (req, res, next) => {
         next();
     } catch (error) {
         console.log("Error in auth middleware:", error.message);
+        console.log(error.stack);
         return res.status(500).json({message: "Internal Sever Error!"})
     }
 }

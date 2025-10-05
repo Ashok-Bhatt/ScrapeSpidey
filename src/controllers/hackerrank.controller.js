@@ -1,7 +1,7 @@
-import {configChromeDriver} from "../utils/scrapeConfig.js"
+import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
 
 const getUserInfo = async (req, res) => {
-    const username = req.params.user;
+    const username = req.query.user;
     const url = `https://www.hackerrank.com/profile/${username}/`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
@@ -11,7 +11,7 @@ const getUserInfo = async (req, res) => {
 
     try {
         browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
+        if (!browser) return res.status(500).json({message: "Failed to setup browser"});
 
         page = await configBrowserPage(browser, url, 'domcontentloaded', '.hr-heading-02.profile-title.ellipsis', 30000, 30000);
 
@@ -55,7 +55,7 @@ const getUserInfo = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         console.log(error.stack);
-        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
+        return res.status(500).json({message: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }

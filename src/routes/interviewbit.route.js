@@ -6,7 +6,7 @@ import { getAnalytics } from "../middlewares/analytics.middleware.js";
 
 const router = Router();
 
-router.route("/user/profile/:user").get(verifyApiKey, checkLimit, getAnalytics, getUserInfo);
+router.route("/user/profile").get(verifyApiKey, checkLimit, getAnalytics, getUserInfo);
 
 export {
     router,

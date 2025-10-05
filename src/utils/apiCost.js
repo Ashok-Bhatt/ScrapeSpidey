@@ -27,6 +27,10 @@ const apiPointsCost = [
                     query: "includeContests=true",
                     cost: 0.5,
                 },
+                {
+                    query: "includeAchievements=true",
+                    cost: 0.5,
+                },
             ],
         },
     },
@@ -48,7 +52,16 @@ const apiPointsCost = [
         baseUrl: "interviewbit/user/profile",
         cost: {
             base: 1,
-            additionalQueryCost: [],
+            additionalQueryCost: [
+                {
+                    query: "includeSubmissionStats=true",
+                    cost: 0.5,
+                },
+                {
+                    query: "includeBadges=true",
+                    cost: 0.5,
+                },
+            ],
         },
     },
     {
@@ -58,6 +71,10 @@ const apiPointsCost = [
             additionalQueryCost: [
                 {
                     query: "includeContests=true",
+                    cost: 0.5,
+                },
+                {
+                    query: "includeCertificates=true",
                     cost: 0.5,
                 },
             ],

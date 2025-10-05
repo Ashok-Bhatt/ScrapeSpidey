@@ -1,9 +1,10 @@
 import { configBrowserPage, configChromeDriver } from "../utils/scrapeConfig.js";
 
 const getUserInfo = async (req, res) => {
-    const username = req.params.user;
+    const username = req.query.user;
     const url = `https://www.naukri.com/code360/profile/${username}/`;
-    const includeContests = req.query.includeContests==="true";
+    const includeContests = req.query.includeContests === "true";
+    const includeCertificates = req.query.includeCertificates === "true";
 
     if (!username) return res.status(400).json({message : "Username not found"});
 
@@ -12,11 +13,11 @@ const getUserInfo = async (req, res) => {
 
     try {
         browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
+        if (!browser) return res.status(500).json({message: "Failed to setup browser"});
 
-        page = await configBrowserPage(browser, url, 'networkidle2', '.profile-user-name', 30000, 30000);
+        page = await configBrowserPage(browser, url, 'networkidle2', '.submission-details', 30000, 30000);
 
-        const data = await page.evaluate((username, includeContests) => {
+        const data = await page.evaluate((username, includeContests, includeCertificates) => {
 
             const getText = (element) => element?.textContent || "NA";
 
@@ -26,7 +27,6 @@ const getUserInfo = async (req, res) => {
             const profileViewCountElement = document.querySelector(".profile-view-counter .count");
             const submissionCountElement = document.querySelector(".profile-user-stats-graph-container .left.zen-typo-heading-5");
             const streakElement = Array.from(document.querySelectorAll(".day-count-text"));
-            const certificatesElement = Array.from(document.querySelectorAll(".certificate-list .btn-ent"));
             const totalDsaProblemsCountElement = document.querySelector(".problems-solved .total")
             const dsaProblemsCountElement = Array.from(document.querySelectorAll(".problems-solved .difficulty"));
             const totalWebDevProblemsCountElement = document.querySelector("codingninjas-web-development-domain-card .problem-solved .solved .value");
@@ -113,15 +113,21 @@ const getUserInfo = async (req, res) => {
                 code360Data.contestData = contestData;
             }
 
+            if (includeCertificates){
+                const certificatesElement = Array.from(document.querySelectorAll(".certificate-list .btn-ent"));
+
+                code360Data.certificates = [];
+            }
+
             return code360Data;
-        }, username, includeContests);
+        }, username, includeContests, includeCertificates);
 
         return res.status(200).json(data);
         
     } catch (error) {
         console.log(error.message);
         console.log(error.stack);
-        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
+        return res.status(500).json({message: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }

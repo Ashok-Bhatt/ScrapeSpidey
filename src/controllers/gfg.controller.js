@@ -1,7 +1,7 @@
 import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
 
 const getUserInfo = async (req, res) => {
-    const username = req.params.user;
+    const username = req.query.user;
     const includeContests = req.query.includeContests==="true";
     const url = `https://www.geeksforgeeks.org/user/${username}/`;
 
@@ -12,7 +12,7 @@ const getUserInfo = async (req, res) => {
     
     try {
         browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ error: "Failed to setup browser" });
+        if (!browser) return res.status(500).json({message: "Failed to setup browser" });
 
         page = await configBrowserPage(browser, url, 'domcontentloaded', '.educationDetails_head_left--text__tgi9I', 30000, 30000);
 
@@ -111,14 +111,14 @@ const getUserInfo = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         console.log(error.stack);
-        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
+        return res.status(500).json({message: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }
 };
 
 const getUserSubmissions = async (req, res) => {
-    const username = req.params.user;
+    const username = req.query.user;
     const url = `https://www.geeksforgeeks.org/user/${username}/`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
@@ -128,7 +128,7 @@ const getUserSubmissions = async (req, res) => {
     
     try {
         browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
+        if (!browser) return res.status(500).json({message: "Failed to setup browser"});
 
         page = await configBrowserPage(browser, url, 'domcontentloaded', '.heatMapCard_head__QlR7_', 30000, 30000);
     
@@ -140,7 +140,7 @@ const getUserSubmissions = async (req, res) => {
     } catch (error) {
            console.log(error.message);
            console.log(error.stack);
-           return res.status(500).json({ error: "Failed to fetch data", details: error.message });
+           return res.status(500).json({message: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }

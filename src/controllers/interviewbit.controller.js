@@ -1,101 +1,89 @@
-import {configChromeDriver} from "../utils/scrapeConfig.js"
+import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
 
 const getUserInfo = async (req, res) => {
-    const username = req.params.user;
+    const username = req.query.user;
+    const includeSubmissionStats = req.query.includeSubmissionStats === "true";
+    const includeBadges = req.query.includeBadges === "true";
     const url = `https://www.interviewbit.com/profile/${username}/`;
 
-    if (!username) return res.status(400).json({message : "Username not found"});
+    if (!username) return res.status(400).json({ message: "Username not found" });
 
     let browser;
     let page;
 
     try {
         browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
+        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
 
         page = await configBrowserPage(browser, url, 'domcontentloaded', '.recharts-surface', 30000, 30000);
 
-        const data = await page.evaluate((username) => {
+        const data = await page.evaluate((username, includeSubmissionStats, includeBadges) => {
 
             const getText = (element) => element?.textContent || "NA";
-           
+
             const problemsSolvedElement = Array.from(document.querySelectorAll(".profile-daily-goal__goal-details"));
             const statsElement = Array.from(document.querySelectorAll(".profile-overview-stat-table__item-value"));
-            const joinedOnElement = document.querySelector(".profile-overview-user-details__since");
-            const easyProblemsElement = document.querySelectorAll(".profile-progress-card__stat--easy span")[1];
-            const mediumProblemsElement = document.querySelectorAll(".profile-progress-card__stat--medium span")[1];
-            const hardProblemsElement = document.querySelectorAll(".profile-progress-card__stat--hard span")[1];
-            const totalProblemsElement = document.querySelectorAll(".profile-progress-card__stat--total span")[1];
-            const correctAnswersElement = Array.from(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--correct_answer span"))[1];
-            const compilationErrorElement = Array.from(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--compilation_error span"))[1];
-            const wrongAnswersElement = Array.from(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--wrong_answer span"))[1];
-            const othersElement = Array.from(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--others span"))[1];
 
-            const badgesElement = Array.from(document.querySelectorAll(".profile-badge-progress-tile"));
-
-            const totalScore = getText(problemsSolvedElement[0]);
-            const totalCoins = getText(problemsSolvedElement[1]);
-            const streak = getText(problemsSolvedElement[2]);
+            const easyProblems = getText(document.querySelectorAll(".profile-progress-card__stat--easy span")[1]);
+            const mediumProblems = getText(document.querySelectorAll(".profile-progress-card__stat--medium span")[1]);
+            const hardProblems = getText(document.querySelectorAll(".profile-progress-card__stat--hard span")[1]);
             const totalSolvedProblems = getText(problemsSolvedElement[3]);
-            const globalRank = getText(statsElement[0]);
-            const universityRank = getText(statsElement[1]);
-            const timeSpent = getText(statsElement[2]);
-            const joinedOn = getText(joinedOnElement);
-            const easyProblems = getText(easyProblemsElement);
-            const mediumProblems = getText(mediumProblemsElement);
-            const hardProblems = getText(hardProblemsElement);
-            const totalProblems = getText(totalProblemsElement);
-            const correctAnswers = getText(correctAnswersElement);
-            const compilationErrors = getText(compilationErrorElement);
-            const wrongAnswers = getText(wrongAnswersElement);
-            const others = getText(othersElement);
-            
+            const joinedOn = getText(document.querySelector(".profile-overview-user-details__since"));
+
             const problemsSolved = {
-                Easy : easyProblems != "NA" ? parseInt(easyProblems) : 0,
-                Medium : mediumProblems != "NA" ? parseInt(mediumProblems) : 0,
-                Hard : hardProblems != "NA" ? parseInt(hardProblems) : 0,
-                Total : totalSolvedProblems != "NA" ? parseInt(totalSolvedProblems) : 0,
-            }
-
-            const badges = badgesElement.map((badge) => {
-                return {
-                    title : getText(badge.querySelector(".profile-badge-progress-tile__title")),
-                    date : getText(badge.querySelector(".profile-badge-progress-tile__sub-title")),
-                    image : badge.querySelector(".profile-badge-progress-tile__badge-img")?.getAttribute("style"),
-                }
-            })
-
-            const submissionAnalysis = {
-                correctAnswers : correctAnswers != "NA" ? parseInt(correctAnswers) : 0,
-                wrongAnswers : wrongAnswers != "NA" ? parseInt(wrongAnswers) : 0,
-                compilationErrors : compilationErrors != "NA" ? parseInt(compilationErrors) : 0,
-                others : others != "NA" ? parseInt(others) : 0,
-            }
+                Easy: easyProblems !== "NA" ? parseInt(easyProblems) : 0,
+                Medium: mediumProblems !== "NA" ? parseInt(mediumProblems) : 0,
+                Hard: hardProblems !== "NA" ? parseInt(hardProblems) : 0,
+                Total: totalSolvedProblems !== "NA" ? parseInt(totalSolvedProblems) : 0,
+            };
 
             const interviewbitData = {
-                username : username,
-                totalScore: totalScore != "NA" ? parseInt(totalScore) : 0,
-                totalCoins: totalCoins != "NA" ? parseInt(totalCoins) : 0,
-                streak: streak != "NA" ? parseInt(streak) : 0,
-                globalRank : globalRank != "NA" ? parseInt(globalRank) : null,
-                universityRank : universityRank != "NA" ? parseInt(universityRank) : null,
-                joinedOn : joinedOn,
-                timeSpent : timeSpent,
-                totalProblems : parseInt(totalProblems),
-                problemsSolved : problemsSolved,
-                badges: badges,
-                submissionAnalysis : submissionAnalysis,
+                username: username,
+                totalScore: parseInt(getText(problemsSolvedElement[0])) || 0,
+                totalCoins: parseInt(getText(problemsSolvedElement[1])) || 0,
+                streak: parseInt(getText(problemsSolvedElement[2])) || 0,
+                globalRank: parseInt(getText(statsElement[0])) || null,
+                universityRank: parseInt(getText(statsElement[1])) || null,
+                joinedOn: joinedOn,
+                timeSpent: getText(statsElement[2]),
+                totalProblems: parseInt(getText(document.querySelectorAll(".profile-progress-card__stat--total span")[1])) || 0,
+                problemsSolved: problemsSolved,
+            };
+
+            // ✅ Include Badges Only If Requested
+            if (includeBadges) {
+                const badges = Array.from(document.querySelectorAll(".profile-badge-progress-tile")).map((badge) => ({
+                    title: getText(badge.querySelector(".profile-badge-progress-tile__title")),
+                    date: getText(badge.querySelector(".profile-badge-progress-tile__sub-title")),
+                    image: badge.querySelector(".profile-badge-progress-tile__badge-img")?.getAttribute("style"),
+                }));
+                interviewbitData.badges = badges;
+            }
+
+            // ✅ Include Submission Stats Only If Requested
+            if (includeSubmissionStats) {
+                const correctAnswers = getText(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--correct_answer span")[1]);
+                const wrongAnswers = getText(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--wrong_answer span")[1]);
+                const compilationErrors = getText(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--compilation_error span")[1]);
+                const others = getText(document.querySelectorAll(".profile-progress-card__stat.profile-progress-card__stat--others span")[1]);
+
+                interviewbitData.submissionAnalysis = {
+                    correctAnswers: correctAnswers !== "NA" ? parseInt(correctAnswers) : 0,
+                    wrongAnswers: wrongAnswers !== "NA" ? parseInt(wrongAnswers) : 0,
+                    compilationErrors: compilationErrors !== "NA" ? parseInt(compilationErrors) : 0,
+                    others: others !== "NA" ? parseInt(others) : 0,
+                };
             }
 
             return interviewbitData;
-        }, username);
-        
+        }, username, includeSubmissionStats, includeBadges);
+
         return res.status(200).json(data);
-        
+
     } catch (error) {
         console.log(error.message);
         console.log(error.stack);
-        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
+        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }

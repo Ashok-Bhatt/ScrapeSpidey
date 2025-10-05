@@ -1,7 +1,7 @@
 import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
 
 const getGithubBadges = async (req, res) => {
-    const username = req.params.user;
+    const username = req.query.user;
     const url = `https://github.com//${username}/`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
@@ -11,7 +11,7 @@ const getGithubBadges = async (req, res) => {
 
     try {
         browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ error: "Failed to setup browser"});
+        if (!browser) return res.status(500).json({message: "Failed to setup browser"});
 
         page = await configBrowserPage(browser, url, 'networkidle2', '.js-profile-editable-replace', 30000, 30000);
 
@@ -25,7 +25,7 @@ const getGithubBadges = async (req, res) => {
     } catch (error){
         console.log(error.message);
         console.log(error.stack);
-        return res.status(500).json({ error: "Failed to fetch data", details: error.message });
+        return res.status(500).json({message: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
     }
