@@ -4,6 +4,7 @@ import { generateToken } from "../utils/tokenGenerator.js";
 import { isValidEmail, isValidPassword } from "../utils/validation.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
+import { destroyFile, uploadFile } from "../utils/cloudinary.js";
 
 const createAccount = async (req, res) => {
 
@@ -203,6 +204,35 @@ const getUsers = async (req, res) => {
     }
 }
 
+const uploadProfilePic = async (req, res) => {
+  try {
+    const user = req.user;
+    const file = req.file;
+
+    if (!file) return res.status(400).json({ message: "No image file provided" });
+
+    const oldProfilePicUrl = user.profilePic;
+    const newProfilePicUrl = await uploadFile(file.path, "ScrapeSpidey");
+
+    if (!newProfilePicUrl) return res.status(400).json({ message: "Could not upload new profile image" });
+
+    user.profilePic = newProfilePicUrl;
+    user.save();
+
+    if (oldProfilePicUrl) await destroyFile(oldProfilePicUrl, "ScrapeSpidey");
+
+    res.status(200).json({
+      message: "Profile picture updated successfully",
+      profilePic: newProfilePicUrl,
+    });
+
+  } catch (error) {
+    console.error(error.message);
+    console.log(error.stack);
+    res.status(500).json({ message: "Image upload failed:", error });
+  }
+};
+
 export {
     createAccount,
     login,
@@ -212,4 +242,5 @@ export {
     updateUserInfo,
     changeDailyApiLimit,
     getUsers,
+    uploadProfilePic,
 }
