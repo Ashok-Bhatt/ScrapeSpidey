@@ -27,7 +27,7 @@ const uploadFile = async (filePath, folder) => {
     return uploadedResponse.secure_url;
 }
 
-const destroyFile = async (url, folder) => {
+const destroyFile = async (url) => {
     const publicId = extractPublicId(url);
     await cloudinary.uploader.destroy(publicId);
 }
