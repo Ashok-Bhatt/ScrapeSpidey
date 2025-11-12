@@ -80,6 +80,7 @@ const getUserInfo = async (req, res) => {
                 const contestAttendedElement = document.querySelectorAll(".contestDetailsCard_head_detail--text__NG_ae")[3];
                 const contestTopPercentageElement =  document.querySelector(".contestDetailsCard_head__0MvGa > p");
                 const contestTotalParticipantsElement = document.querySelector(".contestDetailsCard_head__0MvGa > p");
+                const contestsDataElement = Array.from(document.querySelectorAll(".contestToolTip .innerContent .contestToolTipContent "))
 
                 const contestRating = getText(contestRatingElement);
                 const contestLevel = getText(contestLevelElement);
@@ -87,6 +88,20 @@ const getUserInfo = async (req, res) => {
                 const contestAttended = getText(contestAttendedElement);
                 let contestTopPercentage = getText(contestTopPercentageElement);
                 const contestTotalParticipants = getText(contestTotalParticipantsElement);
+                const contests = [];
+
+                for (let i=0; i<contestsDataElement.length; i++){
+                    const ratingElement = contestsDataElement[i].querySelector("span");
+                    const rankElement = contestsDataElement[i].querySelector("p");
+                    const contestNameElement = contestsDataElement[i].querySelector("a");
+
+                    contests.push({
+                        name: contestNameElement.textContent.split(" [")[0],
+                        rank: parseInt(rankElement.split("-")[1]),
+                        rating: parseInt(ratingElement.textContent.split(" ")[0]),
+                        ratingChange: ratingElement.textContent.split(" ")[1].slice(1, -1)
+                    })
+                }
 
                 if (contestTopPercentage !== "NA") contestTopPercentage = contestTopPercentage.split(" ")[3].slice(0, contestTopPercentage.length - 1);
 
@@ -98,6 +113,7 @@ const getUserInfo = async (req, res) => {
                     contestAttended : contestAttended=="NA" ? 0 : parseInt(contestAttended),
                     contestTopPercentage: contestTopPercentage=="NA" ? "NA" : parseInt(contestTopPercentage),
                     contestTotalParticipants: contestTotalParticipants=="NA" ? "NA" : parseInt(contestTotalParticipants.split(" ")[5]),
+                    contests: contests,
                 }
 
                 gfgData.contestData = contestData;
@@ -146,7 +162,112 @@ const getUserSubmissions = async (req, res) => {
     }
 }
 
+const getInstitutionTopThreeRankedUsers = async (req, res) => {
+
+    const institution = req.query.institution;
+    const url = `https://www.geeksforgeeks.org/colleges/${institution}/`;
+    
+    if (!institution) return res.status(400).json({ message: "Institution name not provided" });
+
+    let browser;
+    let page;
+
+    try {
+        browser = await configChromeDriver();
+        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
+
+        page = await configBrowserPage(browser, url, 'domcontentloaded', '.BreadCrumbs_head_singleItem__5u7Ke.BreadCrumbs_head_activeItem__ePY__', 30000, 30000);
+
+        const data = await page.evaluate(() => {
+
+            const getText = (element) => element?.textContent || "NA";
+
+            const rows = Array.from(document.querySelectorAll('.UserCodingProfileCard_userCodingProfileCard__0GQCR'));
+
+            return rows.map((row, rowIndex) => {
+                const usernameElement = row.querySelector(".UserCodingProfileCard_userCodingProfileCard_dataDiv_data--linkhandle__lZchE");
+
+                const userStatsElement = Array.from(row.querySelectorAll(".UserCodingProfileCard_userCodingProfileCard_dataDiv_data--value__3A8Kx"));
+
+                const username = getText(usernameElement);
+                const userProblemsSolved = getText(userStatsElement[0]);
+                const userCodingScore = getText(userStatsElement[1]);
+                const userPotdStreak = getText(userStatsElement[2]);
+
+                return {
+                    rank: rowIndex + 1,
+                    username: username,
+                    userProblemsSolved : userProblemsSolved!="NA" ? parseInt(userProblemsSolved) : "NA",
+                    userCodingScore : userCodingScore!="NA" ? parseInt(userCodingScore) : "NA",
+                    userPotdStreak : userPotdStreak!="NA" ? parseInt(userPotdStreak) : "NA",
+                };
+            });
+        });
+
+        return res.status(200).json({ institution, users: data });
+    } catch (error) {
+        console.log(error.message);
+        console.log(error.stack);
+        return res.status(500).json({ message: "Failed to fetch institution top 10 ranked users"});
+    } finally {
+        if (browser) await browser.close();
+    }
+};
+
+const getInstitutionInfo = async (req, res) => {
+
+    const institution = req.query.institution;
+    const url = `https://www.geeksforgeeks.org/colleges/${institution}/`;
+    
+    if (!institution) return res.status(400).json({ message: "Institution name not provided" });
+
+    let browser;
+    let page;
+
+    try {
+        browser = await configChromeDriver();
+        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
+
+        page = await configBrowserPage(browser, url, 'domcontentloaded', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
+
+        const data = await page.evaluate(() => {
+
+            const getText = (element) => element?.textContent || "NA";
+
+            const institutionNameElement = document.querySelector(".ColgOrgIntroCard_tabHead_details_name__zYvs8");
+            const institutionLocationElement = document.querySelector(".ColgOrgIntroCard_tabHead_details_info_location--value__rc1Dq");
+            const institutionUrlElement = document.querySelector(".ColgOrgIntroCard_tabHead_details_info_email--link__ppVAZ")
+            const institutionRegisteredUsersCountElement = document.querySelector(".ColgOrgIntroCard_tabHead_details_user_regs--numberCursor__uoM0s");
+
+            const institutionName = getText(institutionNameElement);
+            const institutionLocation = getText(institutionLocationElement);
+            const institutionUrl = getText(institutionUrlElement);
+            const institutionRegisteredUsersCount = getText(institutionRegisteredUsersCountElement);
+
+            const institutionData = {
+                institutionName : institutionName,
+                institutionLocation : institutionLocation,
+                institutionUrl : institutionUrl,
+                institutionRegisteredUsersCount : institutionRegisteredUsersCount!="NA" ? parseInt(institutionRegisteredUsersCount) : "NA",
+            }
+
+            return institutionData;
+        });
+
+        return res.status(200).json({ institution, data: data });
+    } catch (error) {
+        console.log(error.message);
+        console.log(error.stack);
+        return res.status(500).json({ message: "Failed to fetch institution info"});
+    } finally {
+        if (browser) await browser.close();
+    }
+};
+
+
 export {
     getUserInfo,
     getUserSubmissions,
+    getInstitutionTopThreeRankedUsers,
+    getInstitutionInfo
 }

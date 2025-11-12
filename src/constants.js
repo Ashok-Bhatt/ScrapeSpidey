@@ -1,5 +1,633 @@
 const DAILY_API_POINT_LIMIT = 100;
 
+const LEETCODE_GRAPHQL_ENDPOINT = "https://leetcode.com/graphql";
+
+const LEETCODE_GRAPHQL_QUERIES = {
+    userProfile : `
+        query userProfileInfo($username: String!) {
+            matchedUser(username: $username) {
+                username
+                githubUrl
+                twitterUrl
+                linkedinUrl
+                profile {
+                    ranking
+                    userAvatar
+                    realName
+                    aboutMe
+                    school
+                    websites
+                    countryName
+                    company
+                    jobTitle
+                    skillTags
+                    postViewCount
+                    postViewCountDiff
+                    reputation
+                    reputationDiff
+                    solutionCount
+                    solutionCountDiff
+                    categoryDiscussCount
+                    categoryDiscussCountDiff
+                    certificationLevel
+                }
+            }
+        }
+    `,
+
+    userLanguageStats : `query languageStats($username: String!) {
+        matchedUser(username: $username){
+            languageProblemCount {
+                languageName
+                problemsSolved
+            }
+        }
+    }`,
+
+    userContestRankings : `
+        query userContestRankingInfo($username: String!) {
+            userContestRanking(username: $username) {
+                attendedContestsCount
+                rating
+                globalRanking
+                totalParticipants
+                topPercentage
+                badge {
+                    name
+                }
+                userContestRankingHistory(username: $username) {
+                    attended
+                    trendDirection
+                    problemsSolved
+                    totalProblems
+                    finishTimeInSeconds
+                    rating
+                    ranking
+                    contest {
+                        title
+                        startTime
+                    }
+                }
+            }
+        }
+    `,
+
+    userProfileUserQuestionProgressV2: `
+        query userProfileUserQuestionProgressV2($userSlug: String!) {
+            userProfileUserQuestionProgressV2(userSlug: $userSlug) {
+                numAcceptedQuestions {
+                    count
+                    difficulty
+                }
+                numFailedQuestions {
+                    count
+                    difficulty
+                }
+                numUntouchedQuestions {
+                    count
+                    difficulty
+                }
+                userSessionBeatsPercentage {
+                    difficulty
+                    percentage
+                }
+                totalQuestionBeatsPercentage
+            }
+        }
+    `,
+
+    userSessionProgress: `
+        query userSessionProgress($username: String!) {
+            allQuestionsCount {
+                difficulty
+                count
+            }
+            matchedUser(username: $username) {
+                submitStats {
+                    acSubmissionNum {
+                        difficulty
+                        count
+                        submissions
+                    }
+                    totalSubmissionNum {
+                        difficulty
+                        count
+                        submissions
+                    }
+                }
+            }
+        }
+    `,
+
+    userBadges: `
+        query userBadges($username: String!) {
+            matchedUser(username: $username) {
+                badges {
+                    id
+                    name
+                    shortName
+                    displayName
+                    icon
+                    hoverText
+                    medal {
+                        slug
+                        config {
+                            iconGif
+                            iconGifBackground
+                        }
+                    }
+                    creationDate
+                    category
+                }
+                upcomingBadges {
+                    name
+                    icon
+                    progress
+                }
+            }
+        }
+    `,
+
+    createdPublicFavoriteList: `
+        query createdPublicFavoriteList($userSlug: String!) {
+            createdPublicFavoriteList(userSlug: $userSlug) {
+                hasMore
+                totalLength
+                favorites {
+                    slug
+                    coverUrl
+                    coverEmoji
+                    coverBackgroundColor
+                    name
+                    isPublicFavorite
+                    lastQuestionAddedAt
+                    hasCurrentQuestion
+                    viewCount
+                    description
+                    questionNumber
+                    isDefaultList
+                }
+            }
+        }
+    `,
+
+    canSeeOtherSubmissionHistory: `
+        query canSeeOtherSubmissionHistory($userSlug: String!) {
+            canSeeOtherSubmissionHistory(userSlug: $userSlug)
+        }
+    `,
+
+    globalData: `
+        query globalData {
+            userStatus {
+                userId
+                isSignedIn
+                isMockUser
+                isPremium
+                isVerified
+                username
+                realName
+                avatar
+                isAdmin
+                isSuperuser
+                permissions
+                isTranslator
+                activeSessionId
+                checkedInToday
+                completedFeatureGuides
+                premiumExpiredAt
+                notificationStatus {
+                    lastModified
+                    numUnread
+                }
+            }
+        }
+    `,
+
+    userProfileCalendar: `
+        query userProfileCalendar($username: String!, $year: Int) {
+            matchedUser(username: $username) {
+                userCalendar(year: $year) {
+                    activeYears
+                    streak
+                    totalActiveDays
+                    dccBadges {
+                        timestamp
+                        badge {
+                            name
+                            icon
+                        }
+                    }
+                    submissionCalendar
+                }
+            }
+        }
+    `,
+
+    recentAcSubmissions: `
+        query recentAcSubmissions($username: String!, $limit: Int!) {
+            recentAcSubmissionList(username: $username, limit: $limit) {
+                id
+                title
+                titleSlug
+                timestamp
+            }
+        }
+    `,
+
+    getUserProfile: `
+        query getUserProfile($username: String!) {
+            matchedUser(username: $username) {
+                activeBadge {
+                    displayName
+                    icon
+                }
+            }
+        }
+    `,
+
+    contestRatingHistogram: `
+        query contestRatingHistogram {
+            contestRatingHistogram {
+                userCount
+                ratingStart
+                ratingEnd
+                topPercentage
+            }
+        }
+    `,
+
+    yearlyMedalsQualified: `
+        query yearlyMedalsQualified($excludeAcquired: Boolean) {
+            yearlyMedalsQualified(excludeAcquired: $excludeAcquired) {
+                awardDescription
+                name
+                obtainDescription
+                slug
+                config {
+                    icon
+                    iconGif
+                    iconGifBackground
+                    iconWearing
+                }
+            }
+        }
+    `,
+
+    premiumBetaFeatures: `
+        query premiumBetaFeatures {
+            premiumBetaFeatures {
+                id
+                featureId
+                title
+                description
+                imageUrl
+                order
+                startsAt
+                endsAt
+                hasAccess
+                optedIn
+                feedbackUrl
+                featureUrl
+                imageHeight
+            }
+        }
+    `,
+
+    getStreakCounter: `
+        query getStreakCounter {
+            streakCounter {
+                streakCount
+                daysSkipped
+                currentDayCompleted
+            }
+        }
+    `,
+
+    currentTimestamp: `
+        query currentTimestamp {
+            currentTimestamp
+        }
+    `,
+
+    questionOfToday: `
+        query questionOfToday {
+            activeDailyCodingChallengeQuestion {
+                date
+                userStatus
+                link
+                question {
+                    titleSlug
+                    title
+                    translatedTitle
+                    acRate
+                    difficulty
+                    freqBar
+                    frontendQuestionId: questionFrontendId
+                    isFavor
+                    paidOnly: isPaidOnly
+                    status
+                    hasVideoSolution
+                    hasSolution
+                    topicTags {
+                        name
+                        id
+                        slug
+                    }
+                }
+            }
+        }
+    `,
+
+    codingChallengeMedal: `
+        query codingChallengeMedal($year: Int!, $month: Int!) {
+            dailyChallengeMedal(year: $year, month: $month) {
+                name
+                config {
+                    icon
+                }
+            }
+        }
+    `,
+
+    siteAnnouncements: `
+        query siteAnnouncements {
+            siteAnnouncements {
+                title
+                content
+                blacklistUrls
+                whitelistUrls
+                navbarItem
+            }
+        }
+    `,
+
+    skillStats: `
+        query skillStats($username: String!) {
+            matchedUser(username: $username) {
+                tagProblemCounts {
+                    advanced {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                    }
+                    intermediate {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                    }
+                    fundamental {
+                        tagName
+                        tagSlug
+                        problemsSolved
+                    }
+                }
+            }
+        }
+    `    
+}
+
+const API_POINTS_COST = [
+    {
+        baseUrl: "gfg/user/profile",
+        cost: {
+            base: 1,
+            additionalQueryCost: [
+                {
+                    query: "includeContests=true",
+                    cost: 0.5,
+                },
+            ],
+        },
+    },
+    {
+        baseUrl: "gfg/user/submissions",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "codechef/user/profile",
+        cost: {
+            base: 1,
+            additionalQueryCost: [
+                {
+                    query: "includeContests=true",
+                    cost: 0.5,
+                },
+                {
+                    query: "includeAchievements=true",
+                    cost: 0.5,
+                },
+            ],
+        },
+    },
+    {
+        baseUrl: "codechef/user/submissions",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "hackerrank/user/profile",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "interviewbit/user/profile",
+        cost: {
+            base: 1,
+            additionalQueryCost: [
+                {
+                    query: "includeSubmissionStats=true",
+                    cost: 0.5,
+                },
+                {
+                    query: "includeBadges=true",
+                    cost: 0.5,
+                },
+            ],
+        },
+    },
+    {
+        baseUrl: "code360/user/profile",
+        cost: {
+            base: 1,
+            additionalQueryCost: [
+                {
+                    query: "includeContests=true",
+                    cost: 0.5,
+                },
+                {
+                    query: "includeCertificates=true",
+                    cost: 0.5,
+                },
+            ],
+        },
+    },
+    {
+        baseUrl: "github/user/badges",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/profile",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/language-stats",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/calendar",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/recent-submissions",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/badges",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/contest-ranking",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/skill-stats",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/question-progress",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/session-progress",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/favorites",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/submission-permission",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/user/active-badge",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/global",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/contest/histogram",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/contest/yearly-medals",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/premium/features",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/streak",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/timestamp",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/question/today",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/coding-challenge/medal",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "leetcode/site/announcements",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+];
+
 export {
     DAILY_API_POINT_LIMIT,
+    LEETCODE_GRAPHQL_ENDPOINT,
+    LEETCODE_GRAPHQL_QUERIES,
+    API_POINTS_COST,
 }

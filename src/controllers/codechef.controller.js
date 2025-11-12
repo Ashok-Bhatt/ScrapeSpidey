@@ -15,7 +15,7 @@ const getUserInfo = async (req, res) => {
         browser = await configChromeDriver();
         if (!browser) return res.status(500).json({message: "Failed to setup browser"});
 
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.user-details-container.plr10', 30000, 30000);
+        page = await configBrowserPage(browser, url, 'networkidle0', '.user-details-container.plr10', 30000, 30000);
 
         const data = await page.evaluate((username, includeContests, includeAchievements) => {
 
