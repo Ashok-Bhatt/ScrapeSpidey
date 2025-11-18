@@ -35,14 +35,16 @@ const LEETCODE_GRAPHQL_QUERIES = {
         }
     `,
 
-    userLanguageStats : `query languageStats($username: String!) {
-        matchedUser(username: $username){
-            languageProblemCount {
-                languageName
-                problemsSolved
+    userLanguageStats : `
+        query languageStats($username: String!) {
+            matchedUser(username: $username){
+                languageProblemCount {
+                    languageName
+                    problemsSolved
+                }
             }
         }
-    }`,
+    `,
 
     userContestRankings : `
         query userContestRankingInfo($username: String!) {
@@ -55,18 +57,18 @@ const LEETCODE_GRAPHQL_QUERIES = {
                 badge {
                     name
                 }
-                userContestRankingHistory(username: $username) {
-                    attended
-                    trendDirection
-                    problemsSolved
-                    totalProblems
-                    finishTimeInSeconds
-                    rating
-                    ranking
-                    contest {
-                        title
-                        startTime
-                    }
+            }
+            userContestRankingHistory(username: $username) {
+                attended
+                trendDirection
+                problemsSolved
+                totalProblems
+                finishTimeInSeconds
+                rating
+                ranking
+                contest {
+                    title
+                    startTime
                 }
             }
         }
