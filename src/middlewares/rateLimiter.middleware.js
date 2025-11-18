@@ -22,7 +22,6 @@ const checkLimit = async (req, res, next) => {
         } else {
 
             const apiPointsCost = getApiCost(req.originalUrl);
-            console.log(apiPointsCost);
 
             apiPointsModel = await ApiPoints.create({
                 apiKey, 
