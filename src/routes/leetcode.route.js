@@ -29,28 +29,28 @@ import {getAnalytics} from "../middlewares/analytics.middleware.js";
 const router = Router();
 
 // User-scoped endpoints
-router.route("/user/profile").post(verifyApiKey, checkLimit, getAnalytics, getUserProfile);
-router.route("/user/language-stats").post(verifyApiKey, checkLimit, getAnalytics, getLanguageStats);
-router.route("/user/calendar").post(verifyApiKey, checkLimit, getAnalytics, getUserCalendar);
-router.route("/user/recent-submissions").post(verifyApiKey, checkLimit, getAnalytics, getRecentAcSubmissions);
-router.route("/user/badges").post(verifyApiKey, checkLimit, getAnalytics, getUserBadges);
-router.route("/user/contest-ranking").post(verifyApiKey, checkLimit, getAnalytics, getContestRanking);
-router.route("/user/skill-stats").post(verifyApiKey, checkLimit, getAnalytics, getSkillStats);
-router.route("/user/question-progress").post(verifyApiKey, checkLimit, getAnalytics, getUserProfileQuestionProgressV2);
-router.route("/user/session-progress").post(verifyApiKey, checkLimit, getAnalytics, getUserSessionProgress);
-router.route("/user/favorites").post(verifyApiKey, checkLimit, getAnalytics, getCreatedPublicFavoriteList);
-router.route("/user/submission-permission").post(verifyApiKey, checkLimit, getAnalytics, getCanSeeOtherSubmissionHistory);
-router.route("/user/active-badge").post(verifyApiKey, checkLimit, getAnalytics, getGetUserProfile);
+router.route("/user/profile").get(verifyApiKey, checkLimit, getAnalytics, getUserProfile);
+router.route("/user/language-stats").get(verifyApiKey, checkLimit, getAnalytics, getLanguageStats);
+router.route("/user/calendar").get(verifyApiKey, checkLimit, getAnalytics, getUserCalendar);
+router.route("/user/recent-submissions").get(verifyApiKey, checkLimit, getAnalytics, getRecentAcSubmissions);
+router.route("/user/badges").get(verifyApiKey, checkLimit, getAnalytics, getUserBadges);
+router.route("/user/contest-ranking").get(verifyApiKey, checkLimit, getAnalytics, getContestRanking);
+router.route("/user/skill-stats").get(verifyApiKey, checkLimit, getAnalytics, getSkillStats);
+router.route("/user/question-progress").get(verifyApiKey, checkLimit, getAnalytics, getUserProfileQuestionProgressV2);
+router.route("/user/session-progress").get(verifyApiKey, checkLimit, getAnalytics, getUserSessionProgress);
+router.route("/user/favorites").get(verifyApiKey, checkLimit, getAnalytics, getCreatedPublicFavoriteList);
+router.route("/user/submission-permission").get(verifyApiKey, checkLimit, getAnalytics, getCanSeeOtherSubmissionHistory);
+router.route("/user/active-badge").get(verifyApiKey, checkLimit, getAnalytics, getGetUserProfile);
 
 // Global / miscellaneous endpoints
-router.route("/global").post(verifyApiKey, checkLimit, getAnalytics, getGlobalData);
-router.route("/contest/histogram").post(verifyApiKey, checkLimit, getAnalytics, getContestRatingHistogram);
-router.route("/contest/yearly-medals").post(verifyApiKey, checkLimit, getAnalytics, getYearlyMedalsQualified);
-router.route("/premium/features").post(verifyApiKey, checkLimit, getAnalytics, getPremiumBetaFeatures);
-router.route("/streak").post(verifyApiKey, checkLimit, getAnalytics, getStreakCounter);
-router.route("/timestamp").post(verifyApiKey, checkLimit, getAnalytics, getCurrentTimestamp);
-router.route("/question/today").post(verifyApiKey, checkLimit, getAnalytics, getQuestionOfToday);
-router.route("/coding-challenge/medal").post(verifyApiKey, checkLimit, getAnalytics, getCodingChallengeMedal);
-router.route("/site/announcements").post(verifyApiKey, checkLimit, getAnalytics, getSiteAnnouncements);
+router.route("/global").get(verifyApiKey, checkLimit, getAnalytics, getGlobalData);
+router.route("/contest/histogram").get(verifyApiKey, checkLimit, getAnalytics, getContestRatingHistogram);
+router.route("/contest/yearly-medals").get(verifyApiKey, checkLimit, getAnalytics, getYearlyMedalsQualified);
+router.route("/premium/features").get(verifyApiKey, checkLimit, getAnalytics, getPremiumBetaFeatures);
+router.route("/streak").get(verifyApiKey, checkLimit, getAnalytics, getStreakCounter);
+router.route("/timestamp").get(verifyApiKey, checkLimit, getAnalytics, getCurrentTimestamp);
+router.route("/question/today").get(verifyApiKey, checkLimit, getAnalytics, getQuestionOfToday);
+router.route("/coding-challenge/medal").get(verifyApiKey, checkLimit, getAnalytics, getCodingChallengeMedal);
+router.route("/site/announcements").get(verifyApiKey, checkLimit, getAnalytics, getSiteAnnouncements);
 
 export {router};
