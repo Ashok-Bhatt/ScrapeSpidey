@@ -2,8 +2,7 @@ import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;
-    const includeContests = req.query.includeContests==="true";
-    const url = `https://www.geeksforgeeks.org/user/${username}/`;
+    const profilePageUrl = `https://www.geeksforgeeks.org/user/${username}`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
 
@@ -14,39 +13,72 @@ const getUserInfo = async (req, res) => {
         browser = await configChromeDriver();
         if (!browser) return res.status(500).json({message: "Failed to setup browser" });
 
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.educationDetails_head_left--text__tgi9I', 30000, 30000);
+        // Going to Profile Tab
+        page = await configBrowserPage(browser, profilePageUrl, 'domcontentloaded', '.NewProfile_container__licgi', 30000, 30000);
 
-        const data = await page.evaluate((username, includeContests) => {
+        const userProfileData = await page.evaluate((username) => {
+
+            const getText = (element) => element?.textContent || "NA";
+
+            const avatarElement = document.querySelector(".NewProfile_container__licgi img");
+            const guestNameElement = document.querySelector(".NewProfile_name__N_Nlw");
+            const userTaglineElement = document.querySelector(".NewProfile_designation__fujtZ");
+            const followersCountElement = document.querySelector(".NewProfile_followData__D1eYY span");
+            const followingsCountElement = document.querySelector(".NewProfile_followData__D1eYY span:nth-child(3)");
+            const aboutMeElement = document.querySelector(".Overview_about-me-text__AMz1Q");
+            const experienceInYearsElement = document.querySelector(".Overview_section-header__lhPM2 .Overview_subheading__kZ_3w");
+
+            const avatar = avatarElement?.getAttribute("src") || "NA";
+
+            const avatarUrl = avatar !== "NA" ? "https://www.geeksforgeeks.org/" + avatar : "NA";
+            const guestName = getText(guestNameElement);
+            const userTagline = getText(userTaglineElement);
+            const followersCount = getText(followersCountElement);
+            const followingsCount = getText(followingsCountElement);
+            const aboutMe = getText(aboutMeElement);
+            const experienceInYears = getText(experienceInYearsElement);
+
+            const data = {
+                username : username,
+                avatar: avatarUrl,
+                guestName : guestName,
+                userTagline : userTagline,
+                followersCount : followersCount=="NA" ? 0 : parseInt(followersCount),
+                followingsCount : followingsCount=="NA" ? 0 : parseInt(followingsCount),
+                aboutMe : aboutMe,
+                experienceInYears : experienceInYears=="NA" ? 0 : parseInt(experienceInYears.split(" ")[2]),
+            };
+
+            return data;
+            
+        }, username);
+
+
+        // Coding Score Tab
+        page = await configBrowserPage(browser, `${profilePageUrl}?tab=activity`, 'networkidle0', '.ProblemNavbar_head_nav__OqbEt', 30000, 30000);
+
+        const userCodingData = await page.evaluate(() => {
 
             const getText = (element) => element?.textContent || "NA";
             const getTitleCase = (word) => word.charAt(0).toUpperCase() + word.slice(1);
 
             const difficultyTags = ["School", "Basic", "Easy", "Medium", "Hard"];
+            const problemsSolved = {};
 
-            const avatarElement = document.querySelector(".profilePicSection_head_img__1GLm0 > span > img");
-            const institutionNameElement = document.querySelector(".educationDetails_head_left--text__tgi9I");
-            const institutionRankElement = document.querySelector(".educationDetails_head_left_userRankContainer--text__wt81s b");
-            const languagesUsedElement = document.querySelector(".educationDetails_head_right--text__lLOHI");
-            const maxStreakElement = document.querySelector(".circularProgressBar_head_mid_streakCnt__MFOF1");
-            const codingScoreElement = document.querySelectorAll(".scoreCard_head_left--score__oSi_x")[0];
-            const totalProblemsSolvedElement = document.querySelectorAll(".scoreCard_head_left--score__oSi_x")[1];
+            const statsElements = Array.from(document.querySelectorAll(".ScoreContainer_score-grid__zozAO .ScoreContainer_value__7yy7h"));
+            const currentStreakElement = document.querySelector(".PotdContainer_streakText__oNgWh");
+            const potdElements = Array.from(document.querySelectorAll(".PotdContainer_statValue__nt1dr"));
+            const problemDifficultyTagElements = Array.from(document.querySelectorAll(".ProblemNavbar_head_nav--text__7u4wN"));
 
-            const avatar = avatarElement?.getAttribute("src") || "NA";
-            const institutionName = getText(institutionNameElement);
-            const institutionRank = getText(institutionRankElement);
-            const languagesUsed = getText(languagesUsedElement);
-            const maxStreak = getText(maxStreakElement);
-            let codingScore = getText(codingScoreElement);
-            const totalProblemsSolved = getText(totalProblemsSolvedElement);
+            const codingScore = getText(statsElements[0]);
+            const totalProblemsSolved = getText(statsElements[1]);
+            const instituteRank = getText(statsElements[2]);
+            const articlesPublished = getText(statsElements[3]);
+            const currentStreak = getText(currentStreakElement);
+            const maxStreak = getText(potdElements[0]);
+            const potdsSolved = getText(potdElements[1]);
 
-            if (codingScore == "__" || codingScore == "NA") codingScore = "0";
-            const avatarUrl = avatar !== "NA" ? "https://www.geeksforgeeks.org/" + avatar : "NA";
-            const problemsSolved = {
-                Total: (totalProblemsSolved === "__" || totalProblemsSolved === "NA") ? 0 : parseInt(totalProblemsSolved),
-            };
-
-            // Extracting problems count for different difficulty level
-            document.querySelectorAll(".problemNavbar_head_nav--text__UaGCx").forEach((selector) => {
+            problemDifficultyTagElements.forEach((selector) => {
                 const key = getTitleCase(selector.textContent.split(" ")[0].toLowerCase());
                 let value = selector.textContent.split(" ")[1];
                 value = value.slice(1, value.length - 1);
@@ -60,70 +92,22 @@ const getUserInfo = async (req, res) => {
                 }
             }
 
-            const gfgData = {
-                username : username,
-                avatar: avatarUrl,
-                institutionName : institutionName,
-                institutionRank : institutionRank=="NA" ? "NA" : parseInt(institutionRank.split(" ")[0]),
-                languagesUsed : languagesUsed=="NA" ? [] : languagesUsed.split(",").map((language)=>language.trim()),
-                userMaxStreak : maxStreak=="NA" ? 0 : parseInt(maxStreak.split("/")[0]),
-                globalMaxStreak : maxStreak=="NA" ? 0 : parseInt(maxStreak.split("/")[1]),
+            const data = {
                 codingScore : codingScore=="NA" ? 0 : parseInt(codingScore),
-                problemsSolved : problemsSolved,
-            };
-
-            if (includeContests===true){
-
-                const contestRatingElement = document.querySelectorAll(".contestDetailsCard_head_detail--text__NG_ae")[0];
-                const contestLevelElement = document.querySelectorAll(".contestDetailsCard_head_detail--text__NG_ae")[1];
-                const contestRankingElement = document.querySelectorAll(".contestDetailsCard_head_detail--text__NG_ae")[2];
-                const contestAttendedElement = document.querySelectorAll(".contestDetailsCard_head_detail--text__NG_ae")[3];
-                const contestTopPercentageElement =  document.querySelector(".contestDetailsCard_head__0MvGa > p");
-                const contestTotalParticipantsElement = document.querySelector(".contestDetailsCard_head__0MvGa > p");
-                const contestsDataElement = Array.from(document.querySelectorAll(".contestToolTip .innerContent .contestToolTipContent "))
-
-                const contestRating = getText(contestRatingElement);
-                const contestLevel = getText(contestLevelElement);
-                const contestRanking = getText(contestRankingElement);
-                const contestAttended = getText(contestAttendedElement);
-                let contestTopPercentage = getText(contestTopPercentageElement);
-                const contestTotalParticipants = getText(contestTotalParticipantsElement);
-                const contests = [];
-
-                for (let i=0; i<contestsDataElement.length; i++){
-                    const ratingElement = contestsDataElement[i].querySelector("span");
-                    const rankElement = contestsDataElement[i].querySelector("p");
-                    const contestNameElement = contestsDataElement[i].querySelector("a");
-
-                    contests.push({
-                        name: contestNameElement.textContent.split(" [")[0],
-                        rank: parseInt(rankElement.split("-")[1]),
-                        rating: parseInt(ratingElement.textContent.split(" ")[0]),
-                        ratingChange: ratingElement.textContent.split(" ")[1].slice(1, -1)
-                    })
-                }
-
-                if (contestTopPercentage !== "NA") contestTopPercentage = contestTopPercentage.split(" ")[3].slice(0, contestTopPercentage.length - 1);
-
-                // Extracting the contest data
-                const contestData = {
-                    contestRating : contestRating=="NA" ? 1500 : parseInt(contestRating),
-                    contestLevel : contestLevel=="NA" ? 0 : parseInt(contestLevel),
-                    contestRanking : contestRanking=="NA" ? "NA" : parseInt(contestRanking),
-                    contestAttended : contestAttended=="NA" ? 0 : parseInt(contestAttended),
-                    contestTopPercentage: contestTopPercentage=="NA" ? "NA" : parseInt(contestTopPercentage),
-                    contestTotalParticipants: contestTotalParticipants=="NA" ? "NA" : parseInt(contestTotalParticipants.split(" ")[5]),
-                    contests: contests,
-                }
-
-                gfgData.contestData = contestData;
+                instituteRank : instituteRank=="NA" ? -1 : parseInt(instituteRank),
+                articlesPublished: (articlesPublished=="NA" || articlesPublished=="__") ? 0 : parseInt(articlesPublished),
+                totalProblemsSolved: totalProblemsSolved=="NA" ? 0 : parseInt(totalProblemsSolved),
+                currentStreak : currentStreak=="NA" ? 0 : parseInt(currentStreak.split(" ")[0]),
+                maxStreak : maxStreak=="NA" ? 0 : parseInt(maxStreak.split(" ")[0]),
+                potdsSolved : potdsSolved=="NA" ? 0 : parseInt(potdsSolved.split(" ")[0]),
+                problemsSolved: problemsSolved,
             }
 
-            return gfgData;
+            return data;
             
-        }, username, includeContests);
+        });
         
-        return res.status(200).json(data);
+        return res.status(200).json({...userProfileData, ...userCodingData});
     } catch (error) {
         console.log(error.message);
         console.log(error.stack);
@@ -135,7 +119,7 @@ const getUserInfo = async (req, res) => {
 
 const getUserSubmissions = async (req, res) => {
     const username = req.query.user;
-    const url = `https://www.geeksforgeeks.org/user/${username}/`;
+    const url = `https://www.geeksforgeeks.org/user/${username}?tab=activity`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
 
@@ -228,7 +212,7 @@ const getInstitutionInfo = async (req, res) => {
         browser = await configChromeDriver();
         if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
 
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
+        page = await configBrowserPage(browser, url, 'networkidle0', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
