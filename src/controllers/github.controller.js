@@ -2,7 +2,7 @@ import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
 
 const getGithubBadges = async (req, res) => {
     const username = req.query.user;
-    const url = `https://github.com//${username}/`;
+    const url = `https://github.com//${username}?tab=achievements`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
 
@@ -13,12 +13,29 @@ const getGithubBadges = async (req, res) => {
         browser = await configChromeDriver();
         if (!browser) return res.status(500).json({message: "Failed to setup browser"});
 
-        page = await configBrowserPage(browser, url, 'networkidle2', '.js-profile-editable-replace', 30000, 30000);
+        page = await configBrowserPage(browser, url, 'networkidle2', '.achievement-card', 30000, 30000);
 
         const data = await page.evaluate(() => {
-            const githubBadgesContainerElement = document.querySelector(".js-profile-editable-replace div.color-border-muted");
-            const githubBadgesElement = Array.from(githubBadgesContainerElement.querySelectorAll("img"));
-            return githubBadgesElement.map((badgeElement)=>badgeElement.getAttribute("src"));
+
+            const getText = (element) => element?.textContent || "NA";
+
+            const githubBadgesElement = Array.from(document.querySelectorAll(".achievement-card"));
+
+            return githubBadgesElement.map((badgeElement)=>{
+                const iconElement = badgeElement.querySelector("img");
+                const nameElement = badgeElement.querySelector(".ws-normal");
+                const countElement = badgeElement.querySelector(".achievement-tier-label");
+
+                const icon = iconElement ? iconElement.getAttribute("src") : "NA";
+                const name = getText(nameElement);
+                const count = getText(countElement);
+
+                return {
+                    icon : icon,
+                    name : name,
+                    count : count!="NA" ? parseInt(count.slice(1,count.length)) : 1
+                }
+            });
         });
 
         return res.status(200).json(data);
