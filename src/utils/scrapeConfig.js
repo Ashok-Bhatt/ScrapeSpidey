@@ -1,22 +1,17 @@
 import puppeteer from "puppeteer";
-import {NODE_ENV } from "../config.js";
+import {NODE_ENV, PUPPETEER_EXECUTABLE_PATH,  } from "../config.js";
 
 const configChromeDriver = async () => {
-    if (NODE_ENV == "development"){
-        return await puppeteer.launch({
-            headless: false,
-            args: [
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-http2",
-                "--disable-features=IsolateOrigins,site-per-process",
-            ]
-        });
-    } else {
-        return await puppeteer.launch({
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH
-        });
-    }
+    return await puppeteer.launch({
+        executablePath: NODE_ENV=="production" ? PUPPETEER_EXECUTABLE_PATH : puppeteer.executablePath(),
+        headless: NODE_ENV=="production" ? true : false,
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-http2",
+            "--disable-features=IsolateOrigins,site-per-process",
+        ]
+    });
 }
 
 const configBrowserPage = async (browser, url, waitUntilOption, waitSelector, waitForPageTime, waitForSelectorTime) => {
