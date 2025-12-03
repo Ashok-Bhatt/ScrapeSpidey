@@ -4,7 +4,7 @@ import {NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
 const configChromeDriver = async () => {
     try {
         return await puppeteer.launch({
-            headless: NODE_ENV=="production" ? true : false,
+            headless: NODE_ENV=="production" ? "new" : false,
             executablePath: PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
             args: [
                 "--no-sandbox",
