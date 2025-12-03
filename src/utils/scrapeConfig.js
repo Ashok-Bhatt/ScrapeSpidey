@@ -1,10 +1,10 @@
 import puppeteer from "puppeteer";
-import {NODE_ENV, PUPPETEER_EXECUTABLE_PATH,  } from "../config.js";
+import {NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
 
 const configChromeDriver = async () => {
     return await puppeteer.launch({
-        executablePath: NODE_ENV=="production" ? PUPPETEER_EXECUTABLE_PATH : puppeteer.executablePath(),
         headless: NODE_ENV=="production" ? true : false,
+        executablePath: PUPPETEER_EXECUTABLE_PATH,
         args: [
             "--no-sandbox",
             "--disable-setuid-sandbox",
