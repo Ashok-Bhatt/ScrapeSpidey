@@ -1,4 +1,5 @@
 import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
+import {isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData} from "../utils/calendar.js"
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;
@@ -119,27 +120,59 @@ const getUserInfo = async (req, res) => {
 
 const getUserSubmissions = async (req, res) => {
     const username = req.query.user;
-    const url = `https://www.geeksforgeeks.org/user/${username}?tab=activity`;
+    const year = req.query.year || new Date().getFullYear().toString();
+    const yearInt = parseInt(year, 10);
+    let heatmapData = {};
+
+    const url = `https://www.geeksforgeeks.org/profile/${username}?tab=activity`;
 
     if (!username) return res.status(400).json({message : "Username not found"});
 
     let browser;
     let page;
     
+    const yearButtonSelector = ".HeatMapHeader_year_button___SZVP";
+    const dropdownItemSelector = ".HeatMapHeader_dropdown_item__CnSGm";
+    const heatmapSvgContainer = '.ch-domain-container-animation-wrapper';
+    const tooltipSelector = '#ch-tooltip-body';
+    
     try {
-        browser = await configChromeDriver();
+        browser = await configChromeDriver(); 
         if (!browser) return res.status(500).json({message: "Failed to setup browser"});
 
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.heatMapCard_head__QlR7_', 30000, 30000);
-    
-        const data = await page.evaluate(() => {
-            return JSON.parse(document.querySelector("#__NEXT_DATA__").textContent)["props"]["pageProps"]["heatMapData"]["result"];
-        });
+        page = await configBrowserPage(browser, url, 'domcontentloaded', '.HeatAndLineChart_heatAndLineChart__5JbBm', 30000, 30000);
 
-        return res.status(200).json(data);
+        await page.click(yearButtonSelector); 
+        await page.waitForSelector(dropdownItemSelector, { visible: true });
+
+        const heatmapOptionValues = await page.$$eval(
+            dropdownItemSelector,
+            options => options.map(option => option.textContent.trim())
+        );
+
+        const yearIndex = heatmapOptionValues.indexOf(year);
+        if (yearIndex === -1) return res.status(404).json({ message: `Year ${year} not found in dropdown options.` });
+
+        const specificYearSelector = `div.HeatMapHeader_dropdown_item__CnSGm:nth-child(${yearIndex + 1})`;
+
+        await page.click(specificYearSelector); 
+        await page.waitForSelector(heatmapSvgContainer, { visible: true });
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const daysInYear = isLeapYear(yearInt) ? 366 : 365;
+
+        for (let i = 0; i < daysInYear; i++) {
+            const { dateKey, month, dayOfMonth } = getDateDetailsFromDayOfYear(yearInt, i); 
+            const dailyBlockSelector = `.m_${month} g:nth-child(${dayOfMonth}) rect`;
+            const scrapedData = await scrapeGfgTooltipData(page, dailyBlockSelector, tooltipSelector);
+            const finalDateKey = scrapedData.date || dateKey;
+            heatmapData[finalDateKey] = scrapedData.count;
+        }
+        
+        return res.status(200).json(heatmapData);
+
     } catch (error) {
-           console.log(error.message);
-           console.log(error.stack);
+           console.error("Error fetching submissions:", error.message);
            return res.status(500).json({message: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
@@ -212,7 +245,7 @@ const getInstitutionInfo = async (req, res) => {
         browser = await configChromeDriver();
         if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
 
-        page = await configBrowserPage(browser, url, 'networkidle0', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
+        page = await configBrowserPage(browser, url, 'networkidle2', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
