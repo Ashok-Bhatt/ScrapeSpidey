@@ -1,4 +1,5 @@
 import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
+import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../utils/calendar.js";
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;
@@ -89,6 +90,73 @@ const getUserInfo = async (req, res) => {
     }
 };
 
+const getUserSubmissions = async (req, res) => {
+    const username = req.query.user;
+    const year = req.query.year || new Date().getFullYear().toString();
+    const yearInt = parseInt(year, 10);
+    let heatmapData = {};
+
+    const url = `https://www.interviewbit.com/profile/${username}`;
+
+    if (!username) return res.status(400).json({message : "Username not found"});
+
+    let browser;
+    let page;
+    
+    const yearButtonSelector = ".profile-activity-heatmap__year-select-selected";
+    const dropdownItemSelector = ".profile-activity-heatmap__year-select-item";
+    const heatmapSvgContainer = '.profile-activity-heatmap__months';
+    const tooltipSelector = '.profile-activity-heatmap__tooltip';
+    
+    try {
+        browser = await configChromeDriver(); 
+        if (!browser) return res.status(500).json({message: "Failed to setup browser"});
+
+        page = await configBrowserPage(browser, url, 'domcontentloaded', '.profile-activity-heatmap__months', 30000, 30000);
+
+        await page.click(yearButtonSelector); 
+        await new Promise(resolve => setTimeout(resolve, 250));
+        await page.waitForSelector(dropdownItemSelector, { visible: true });
+
+        const heatmapOptionValues = await page.$$eval(
+            dropdownItemSelector,
+            options => options.map(option => option.textContent.trim())
+        );
+
+        const yearIndex = heatmapOptionValues.indexOf(year);
+        if (yearIndex === -1) return res.status(404).json({ message: `Year ${year} not found in dropdown options.` });
+        console.log(yearIndex, typeof yearIndex);
+
+        const specificYearSelector = `.profile-activity-heatmap__year-select-item:nth-child(${yearIndex + 1})`;
+
+        await page.click(specificYearSelector); 
+        await page.waitForSelector(heatmapSvgContainer, { visible: true });
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const dailyBlocksCount = await page.evaluate(() => {
+            return document.querySelectorAll(".profile-activity-heatmap__day:not(.profile-activity-heatmap__day--disabled)").length;
+        })
+        console.log(dailyBlocksCount);
+
+        for (let i = 0; i < dailyBlocksCount; i++) {
+            const { dateKey, month, dayOfMonth } = getDateDetailsFromDayOfYear(yearInt, i); 
+            const dailyBlockSelector = `.profile-activity-heatmap__day:not(.profile-activity-heatmap__day--disabled):nth-child(${i+1})`;
+            const scrapedData = await scrapeGfgTooltipData(page, dailyBlockSelector, tooltipSelector);
+            const finalDateKey = scrapedData.date || dateKey;
+            heatmapData[finalDateKey] = scrapedData.count;
+        }
+        
+        return res.status(200).json(heatmapData);
+
+    } catch (error) {
+           console.error("Error fetching submissions:", error.message);
+           return res.status(500).json({message: "Failed to fetch data", details: error.message });
+    } finally {
+        if (browser) await browser.close();
+    }
+}
+
 export {
     getUserInfo,
+    getUserSubmissions,
 }
