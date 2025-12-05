@@ -21,6 +21,7 @@ import {
     fetchCodingChallengeMedal,
     fetchSiteAnnouncements,
 } from "../services/leetcode.service.js";
+import {getNormalizedLeetCodeHeatmap} from "../utils/calendar.js";
 
 // Controller helpers - one endpoint per service function
 const validateParam = (value) => value !== undefined && value !== null && value !== "";
@@ -60,6 +61,7 @@ const getUserCalendar = async (req, res) => {
     try {
         const data = await fetchUserCalendar(username, year);
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user calendar." });
+        data["matchedUser"]["userCalendar"]["submissionCalendar"] = getNormalizedLeetCodeHeatmap(JSON.parse(data["matchedUser"]["userCalendar"]["submissionCalendar"]), year);
         return res.status(200).json(data);
     } catch (error) {
         console.log(error.message);

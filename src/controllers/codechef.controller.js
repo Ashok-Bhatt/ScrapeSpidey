@@ -1,4 +1,5 @@
 import { configChromeDriver, configBrowserPage } from "../utils/scrapeConfig.js";
+import {getNormalizedCodeChefHeatmap} from "../utils/calendar.js"
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;
@@ -104,7 +105,6 @@ const getUserInfo = async (req, res) => {
 };
 
 const getUserSubmissions = async (req, res) => {
-
     const username = req.query.user;
     const url = `https://www.codechef.com/users/${username}/`;
 
@@ -112,31 +112,48 @@ const getUserSubmissions = async (req, res) => {
 
     let browser;
     let page;
+    let heatmapData = {};
 
     try {
-        browser = await configChromeDriver();
-        if (!browser)return res.status(500).json({message: "Failed to setup browser"});
+        browser = await configChromeDriver(); 
+        if (!browser) return res.status(500).json({message: "Failed to setup browser"});
 
         page = await configBrowserPage(browser, url, 'domcontentloaded', '.user-details-container.plr10', 30000, 30000);
 
-        const data = await page.evaluate(() => {
+        const heatmapSelectSelector = "#heatmap-period-selector";
 
-            const heatmapElement = Array.from(document.querySelectorAll(".heatmap-content svg rect"));
-            const heatmapData = {};
+        const heatmapOptionValues = await page.$$eval(
+            `${heatmapSelectSelector} option`,
+            options => options.map(option => option.value)
+        );
 
-            heatmapElement.map((heatmapBlock)=>{
-                const date = heatmapBlock.getAttribute("data-date");
-                const submissionsCount = heatmapBlock.getAttribute("data-count");
-                heatmapData[date] = (submissionsCount ? parseInt(submissionsCount) : 0);
-            })
+        for (const optionValue of heatmapOptionValues) {
+            await page.select(heatmapSelectSelector, optionValue);
+            await page.waitForSelector('.heatmap-content', { visible: true });
 
-            return heatmapData;
-        });
+            const data = await page.evaluate(() => {
+                const results = {};
+                const heatmapBlocks = document.querySelectorAll(".heatmap-content svg rect");
 
-        return res.status(200).json(data);
+                heatmapBlocks.forEach((block) => {
+                    const date = block.getAttribute("data-date");
+                    const submissionsCount = block.getAttribute("data-count");
+                    
+                    if (date) {
+                        results[date] = (submissionsCount ? parseInt(submissionsCount, 10) : 0);
+                    }
+                });
+
+                return results;
+            });
+
+            heatmapData = { ...heatmapData, ...data };
+        }
+
+        return res.status(200).json(getNormalizedCodeChefHeatmap(heatmapData));
+
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
+        console.error("Error fetching submissions:", error.message);
         return res.status(500).json({message: "Failed to fetch data", details: error.message });
     } finally {
         if (browser) await browser.close();
