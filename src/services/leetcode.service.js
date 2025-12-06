@@ -61,40 +61,8 @@ export const fetchUserSessionProgress = async (username) => {
     return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.userSessionProgress, { username });
 };
 
-export const fetchCreatedPublicFavoriteList = async (userSlug) => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.createdPublicFavoriteList, { userSlug });
-};
-
-export const fetchCanSeeOtherSubmissionHistory = async (userSlug) => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.canSeeOtherSubmissionHistory, { userSlug });
-};
-
-export const fetchGlobalData = async () => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.globalData, {});
-};
-
-export const fetchGetUserProfile = async (username) => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.getUserProfile, { username });
-};
-
 export const fetchContestRatingHistogram = async () => {
     return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.contestRatingHistogram, {});
-};
-
-export const fetchYearlyMedalsQualified = async (excludeAcquired = false) => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.yearlyMedalsQualified, { excludeAcquired });
-};
-
-export const fetchPremiumBetaFeatures = async () => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.premiumBetaFeatures, {});
-};
-
-export const fetchStreakCounter = async () => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.getStreakCounter, {});
-};
-
-export const fetchCurrentTimestamp = async () => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.currentTimestamp, {});
 };
 
 export const fetchQuestionOfToday = async () => {
@@ -103,8 +71,4 @@ export const fetchQuestionOfToday = async () => {
 
 export const fetchCodingChallengeMedal = async (year, month) => {
     return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.codingChallengeMedal, { year, month });
-};
-
-export const fetchSiteAnnouncements = async () => {
-    return await makeGraphQLRequest(LEETCODE_GRAPHQL_QUERIES.siteAnnouncements, {});
 };

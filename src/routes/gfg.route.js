@@ -9,6 +9,6 @@ const router = Router();
 router.route("/user/profile").get(verifyApiKey, checkLimit, getAnalytics, getUserInfo);
 router.route("/user/submissions").get(verifyApiKey, checkLimit, getAnalytics, getUserSubmissions);
 router.route("/institution/top-3").get(verifyApiKey, checkLimit, getAnalytics, getInstitutionTopThreeRankedUsers);
-router.route("/institution/info").get(verifyApiKey, checkLimit, getAnalytics, getInstitutionInfo);
+// router.route("/institution/info").get(verifyApiKey, checkLimit, getAnalytics, getInstitutionInfo);
 
 export {router};
