@@ -27,7 +27,7 @@ app.use(cors({
 app.use("/api/v1/gfg", GfgRouter);
 app.use("/api/v1/codechef", codechefRouter);
 app.use("/api/v1/hackerrank", hackerrankRouter);
-app.use("/api/v1/code360", code360Router);
+// app.use("/api/v1/code360", code360Router);
 app.use("/api/v1/interviewbit", interviewbitRouter);
 app.use("/api/v1/leetcode", leetcodeRouter);
 app.use("/api/v1/user", userRouter);
