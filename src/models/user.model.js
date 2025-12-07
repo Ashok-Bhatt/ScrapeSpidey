@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { DAILY_API_POINT_LIMIT } from "../constants.js";
 
 const userSchema = new mongoose.Schema({
     name : {
@@ -23,14 +22,6 @@ const userSchema = new mongoose.Schema({
     password : {
         type: String,
         required: true,
-    },
-    apiKey : {
-        type: String,
-        required: true,
-    },
-    apiPointsDailyLimit: {
-        type: Number,
-        default: DAILY_API_POINT_LIMIT,
     },
     isAdmin : {
         type: Boolean,
