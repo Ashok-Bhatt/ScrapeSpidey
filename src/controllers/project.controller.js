@@ -13,6 +13,22 @@ const getProjects = async (req, res) => {
     }
 };
 
+const getProjectById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user._id;
+
+        const project = await Project.findOne({ _id: id, userId });
+
+        if (!project) return res.status(404).json({ message: "Project not found." });
+
+        return res.status(200).json(project);
+    } catch (error) {
+        console.error("Error in getProjectById controller:", error.message);
+        return res.status(500).json({ message: "Internal Server Error while fetching project." });
+    }
+};
+
 const createProject = async (req, res) => {
     try {
         const { name } = req.body;
@@ -97,6 +113,7 @@ const changeDailyApiLimit = async (req, res) => {
 
 export {
     getProjects,
+    getProjectById,
     createProject,
     updateProject,
     deleteProject,

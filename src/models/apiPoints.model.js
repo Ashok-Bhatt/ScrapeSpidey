@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import {DAILY_API_POINT_LIMIT} from "../constants.js"
 
 const apiPointsSchema = new mongoose.Schema({
     apiKey: {
@@ -7,10 +6,10 @@ const apiPointsSchema = new mongoose.Schema({
         required: true,
     },
     date: {
-        type : String,
+        type: String,
         required: true,
     },
-    apiPointsUsed : {
+    apiPointsUsed: {
         type: Number,
         default: 0,
     },

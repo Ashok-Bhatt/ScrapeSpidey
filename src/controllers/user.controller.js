@@ -42,6 +42,7 @@ const createAccount = async (req, res) => {
         }
     } catch (error) {
         console.log("Error while creating user:", error.message);
+        console.log(error.stack);
         return res.status(500).json({ message: "Something Went Wrong! User not created!" });
     }
 }
@@ -69,6 +70,7 @@ const login = async (req, res) => {
         });
     } catch (error) {
         console.log("Error while login:", error.message);
+        console.log(error.stack);
         return res.status(500).json({ message: "Something Went Wrong! Login Unsuccessful!" });
     }
 }
@@ -79,6 +81,7 @@ const logout = (req, res) => {
         return res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
         console.log("Error while logout:", error.message);
+        console.log(error.stack);
         return res.status(500).json({ message: "Something Went Wrong! Logout Unsuccessful!" });
     }
 }
@@ -88,6 +91,7 @@ const checkAuth = (req, res) => {
         return res.status(200).json(req.user);
     } catch (error) {
         console.log("Error while Checking user authentication:", error.message);
+        console.log(error.stack);
         return res.status(500).json({ message: "Something Went Wrong! Couldn't check user authentication!" });
     }
 }
@@ -110,6 +114,7 @@ const changePassword = async (req, res) => {
         return res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
         console.log("Error while changing password:", error.message);
+        console.log(error.stack);
         return res.status(500).json({ message: "Something went wrong while updating password" });
     }
 };
@@ -137,6 +142,7 @@ const updateUserInfo = async (req, res) => {
         });
     } catch (error) {
         console.log("Error while updating user info:", error.message);
+        console.log(error.stack);
         return res.status(500).json({ message: "Something went wrong while updating user info" });
     }
 };
@@ -210,6 +216,24 @@ const uploadProfilePic = async (req, res) => {
     }
 };
 
+const updateUserApiKey = async (req, res) => {
+    try {
+        const { apiKey } = req.body;
+        const user = req.user;
+
+        if (!apiKey && apiKey !== "") return res.status(400).json({ message: "API Key is required" });
+
+        user.apiKey = apiKey;
+        await user.save();
+
+        return res.status(200).json({ message: "Default API Key updated successfully", apiKey: user.apiKey });
+    } catch (error) {
+        console.log("Error while updating user api key:", error.message);
+        console.log(error.stack);
+        return res.status(500).json({ message: "Something went wrong while updating API Key" });
+    }
+}
+
 export {
     createAccount,
     login,
@@ -219,4 +243,5 @@ export {
     updateUserInfo,
     getUsers,
     uploadProfilePic,
+    updateUserApiKey,
 }

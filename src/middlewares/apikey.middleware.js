@@ -1,19 +1,23 @@
-import User from "../models/user.model.js";
+import Project from "../models/project.model.js";
 
 const verifyApiKey = async (req, res, next) => {
     try {
         const apiKey = req.query.apiKey || "";
-        if (!apiKey) return res.status(401).json({message: "API Key Required!"});
+        const projectId = req.query.projectId || "";
 
-        const user = await User.findOne({apiKey});
-        if (!user) return res.status(401).json({message: "Invalid API Key!"});
+        let project = null;
+        if (apiKey) project = await Project.findOne({ apiKey });
+        else if (projectId) project = await Project.findById(projectId);
 
-        req.apiPointsDailyLimit = user.apiPointsDailyLimit;
+        if (!project) return res.status(401).json({ message: "Invalid API Key or Project Id!" });
+
+        req.apiKey = project.apiKey;
+        req.apiPointsDailyLimit = project.apiPointsDailyLimit;
         next();
     } catch (error) {
         console.log("Error in api middleware:", error.message);
         console.log(error.stack);
-        return res.status(500).json({message: "Internal Server Error!"});
+        return res.status(500).json({ message: "Internal Server Error!" });
     }
 }
 
