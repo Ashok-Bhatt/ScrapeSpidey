@@ -1,6 +1,7 @@
 import Project from "../models/project.model.js";
 import { v4 as uuid } from "uuid"
 import mongoose from "mongoose";
+import handleError from "../utils/errorHandler.js";
 
 const getProjects = async (req, res) => {
     try {
@@ -8,8 +9,7 @@ const getProjects = async (req, res) => {
         const projects = await Project.find({ userId }).sort({ createdAt: -1 }).select("-userId -__v");
         return res.status(200).json(projects);
     } catch (error) {
-        console.error("Error in getProjects controller:", error.message);
-        return res.status(500).json({ message: "Internal Server Error while fetching projects." });
+        return handleError(res, error, "Error in getProjects controller:");
     }
 };
 
@@ -24,8 +24,7 @@ const getProjectById = async (req, res) => {
 
         return res.status(200).json(project);
     } catch (error) {
-        console.error("Error in getProjectById controller:", error.message);
-        return res.status(500).json({ message: "Internal Server Error while fetching project." });
+        return handleError(res, error, "Error in getProjectById controller:");
     }
 };
 
@@ -46,8 +45,7 @@ const createProject = async (req, res) => {
 
         return res.status(201).json(newProject);
     } catch (error) {
-        console.error("Error in createProject controller:", error.message);
-        return res.status(500).json({ message: "Internal Server Error while creating project." });
+        return handleError(res, error, "Error in createProject controller:");
     }
 };
 
@@ -69,8 +67,7 @@ const updateProject = async (req, res) => {
 
         return res.status(200).json(project);
     } catch (error) {
-        console.error("Error in updateProject controller:", error.message);
-        return res.status(500).json({ message: "Internal Server Error while updating project." });
+        return handleError(res, error, "Error in updateProject controller:");
     }
 };
 
@@ -85,8 +82,7 @@ const deleteProject = async (req, res) => {
 
         return res.status(200).json({ message: "Project deleted successfully", deletedProject: project });
     } catch (error) {
-        console.error("Error in deleteProject controller:", error.message);
-        return res.status(500).json({ message: "Internal Server Error while deleting project." });
+        return handleError(res, error, "Error in deleteProject controller:");
     }
 };
 
@@ -105,9 +101,7 @@ const changeDailyApiLimit = async (req, res) => {
 
         return res.status(200).json({ message: "Daily API Points Limit Changed!" });
     } catch (error) {
-        console.log("Error occurred while changing he daily Api limit of the user");
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something went wrong while changing Daily API Points Limit!" });
+        return handleError(res, error, "Error occurred while changing he daily Api limit of the user");
     }
 }
 

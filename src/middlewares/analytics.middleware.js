@@ -1,4 +1,5 @@
 import apiLogs from "../models/apiLogs.model.js";
+import handleError from "../utils/errorHandler.js";
 
 const getAnalytics = async (req, res, next) => {
     try {
@@ -19,8 +20,7 @@ const getAnalytics = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.log("Error in analytics middleware:", error.message);
-        return res.status(500).json({ message: "Internal Server Error!" });
+        return handleError(res, error, "Error in analytics middleware:");
     }
 }
 

@@ -4,6 +4,7 @@ import { isValidEmail, isValidPassword } from "../utils/validation.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { destroyFile, uploadFile } from "../utils/cloudinary.js";
+import handleError from "../utils/errorHandler.js";
 
 const createAccount = async (req, res) => {
 
@@ -41,9 +42,7 @@ const createAccount = async (req, res) => {
             return res.status(400).json({ message: "Something Went Wrong! User not created!" });
         }
     } catch (error) {
-        console.log("Error while creating user:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something Went Wrong! User not created!" });
+        return handleError(res, error, "Error while creating user:");
     }
 }
 
@@ -69,9 +68,7 @@ const login = async (req, res) => {
             user: userResponse,
         });
     } catch (error) {
-        console.log("Error while login:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something Went Wrong! Login Unsuccessful!" });
+        return handleError(res, error, "Error while login:");
     }
 }
 
@@ -80,9 +77,7 @@ const logout = (req, res) => {
         res.cookie("jwt", "", { maxAge: 0 });
         return res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
-        console.log("Error while logout:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something Went Wrong! Logout Unsuccessful!" });
+        return handleError(res, error, "Error while logout:");
     }
 }
 
@@ -90,9 +85,7 @@ const checkAuth = (req, res) => {
     try {
         return res.status(200).json(req.user);
     } catch (error) {
-        console.log("Error while Checking user authentication:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something Went Wrong! Couldn't check user authentication!" });
+        return handleError(res, error, "Error while Checking user authentication:");
     }
 }
 
@@ -113,9 +106,7 @@ const changePassword = async (req, res) => {
 
         return res.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
-        console.log("Error while changing password:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something went wrong while updating password" });
+        return handleError(res, error, "Error while changing password:");
     }
 };
 
@@ -141,9 +132,7 @@ const updateUserInfo = async (req, res) => {
             user: userResponse,
         });
     } catch (error) {
-        console.log("Error while updating user info:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something went wrong while updating user info" });
+        return handleError(res, error, "Error while updating user info:");
     }
 };
 
@@ -181,9 +170,7 @@ const getUsers = async (req, res) => {
             hasNext
         });
     } catch (error) {
-        console.log("Something went wrong while fetching users", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something Went Wrong! Users not fetched!" });
+        return handleError(res, error, "Something went wrong while fetching users");
     }
 }
 
@@ -210,9 +197,7 @@ const uploadProfilePic = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error.message);
-        console.log(error.stack);
-        res.status(500).json({ message: "Image upload failed:", error });
+        return handleError(res, error, "Image upload failed:");
     }
 };
 
@@ -228,9 +213,7 @@ const updateUserApiKey = async (req, res) => {
 
         return res.status(200).json({ message: "Default API Key updated successfully", apiKey: user.apiKey });
     } catch (error) {
-        console.log("Error while updating user api key:", error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something went wrong while updating API Key" });
+        return handleError(res, error, "Error while updating user api key:");
     }
 }
 

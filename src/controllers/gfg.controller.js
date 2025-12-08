@@ -1,18 +1,19 @@
-import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
-import {isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData} from "../utils/calendar.js"
+import { configChromeDriver, configBrowserPage } from "../utils/scrapeConfig.js"
+import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../utils/calendar.js"
+import handleError from "../utils/errorHandler.js";
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;
     const profilePageUrl = `https://www.geeksforgeeks.org/user/${username}`;
 
-    if (!username) return res.status(400).json({message : "Username not found"});
+    if (!username) return res.status(400).json({ message: "Username not found" });
 
     let browser;
     let page;
-    
+
     try {
         browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({message: "Failed to setup browser" });
+        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
 
         // Going to Profile Tab
         page = await configBrowserPage(browser, profilePageUrl, 'domcontentloaded', '.NewProfile_container__licgi', 30000, 30000);
@@ -40,18 +41,18 @@ const getUserInfo = async (req, res) => {
             const experienceInYears = getText(experienceInYearsElement);
 
             const data = {
-                username : username,
+                username: username,
                 avatar: avatarUrl,
-                guestName : guestName,
-                userTagline : userTagline,
-                followersCount : followersCount=="NA" ? 0 : parseInt(followersCount),
-                followingsCount : followingsCount=="NA" ? 0 : parseInt(followingsCount),
-                aboutMe : aboutMe,
-                experienceInYears : experienceInYears=="NA" ? 0 : parseInt(experienceInYears.split(" ")[2]),
+                guestName: guestName,
+                userTagline: userTagline,
+                followersCount: followersCount == "NA" ? 0 : parseInt(followersCount),
+                followingsCount: followingsCount == "NA" ? 0 : parseInt(followingsCount),
+                aboutMe: aboutMe,
+                experienceInYears: experienceInYears == "NA" ? 0 : parseInt(experienceInYears.split(" ")[2]),
             };
 
             return data;
-            
+
         }, username);
 
 
@@ -87,32 +88,30 @@ const getUserInfo = async (req, res) => {
             });
 
             // If User has not solved a single question, then it will initialize the number of questions to each difficulty level to 0
-            for (let i=0; i<difficultyTags.length; i++){
-                if (!problemsSolved[difficultyTags[i]]){
+            for (let i = 0; i < difficultyTags.length; i++) {
+                if (!problemsSolved[difficultyTags[i]]) {
                     problemsSolved[difficultyTags[i]] = 0
                 }
             }
 
             const data = {
-                codingScore : codingScore=="NA" ? 0 : parseInt(codingScore),
-                instituteRank : instituteRank=="NA" ? -1 : parseInt(instituteRank),
-                articlesPublished: (articlesPublished=="NA" || articlesPublished=="__") ? 0 : parseInt(articlesPublished),
-                totalProblemsSolved: totalProblemsSolved=="NA" ? 0 : parseInt(totalProblemsSolved),
-                currentStreak : currentStreak=="NA" ? 0 : parseInt(currentStreak.split(" ")[0]),
-                maxStreak : maxStreak=="NA" ? 0 : parseInt(maxStreak.split(" ")[0]),
-                potdsSolved : potdsSolved=="NA" ? 0 : parseInt(potdsSolved.split(" ")[0]),
+                codingScore: codingScore == "NA" ? 0 : parseInt(codingScore),
+                instituteRank: instituteRank == "NA" ? -1 : parseInt(instituteRank),
+                articlesPublished: (articlesPublished == "NA" || articlesPublished == "__") ? 0 : parseInt(articlesPublished),
+                totalProblemsSolved: totalProblemsSolved == "NA" ? 0 : parseInt(totalProblemsSolved),
+                currentStreak: currentStreak == "NA" ? 0 : parseInt(currentStreak.split(" ")[0]),
+                maxStreak: maxStreak == "NA" ? 0 : parseInt(maxStreak.split(" ")[0]),
+                potdsSolved: potdsSolved == "NA" ? 0 : parseInt(potdsSolved.split(" ")[0]),
                 problemsSolved: problemsSolved,
             }
 
             return data;
-            
+
         });
-        
-        return res.status(200).json({...userProfileData, ...userCodingData});
+
+        return res.status(200).json({ ...userProfileData, ...userCodingData });
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     } finally {
         if (browser) await browser.close();
     }
@@ -126,23 +125,23 @@ const getUserSubmissions = async (req, res) => {
 
     const url = `https://www.geeksforgeeks.org/profile/${username}?tab=activity`;
 
-    if (!username) return res.status(400).json({message : "Username not found"});
+    if (!username) return res.status(400).json({ message: "Username not found" });
 
     let browser;
     let page;
-    
+
     const yearButtonSelector = ".HeatMapHeader_year_button___SZVP";
     const dropdownItemSelector = ".HeatMapHeader_dropdown_item__CnSGm";
     const heatmapSvgContainer = '.ch-domain-container-animation-wrapper';
     const tooltipSelector = '#ch-tooltip-body';
-    
+
     try {
-        browser = await configChromeDriver(); 
-        if (!browser) return res.status(500).json({message: "Failed to setup browser"});
+        browser = await configChromeDriver();
+        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
 
         page = await configBrowserPage(browser, url, 'domcontentloaded', '.HeatAndLineChart_heatAndLineChart__5JbBm', 30000, 30000);
 
-        await page.click(yearButtonSelector); 
+        await page.click(yearButtonSelector);
         await page.waitForSelector(dropdownItemSelector, { visible: true });
 
         const heatmapOptionValues = await page.$$eval(
@@ -155,25 +154,24 @@ const getUserSubmissions = async (req, res) => {
 
         const specificYearSelector = `div.HeatMapHeader_dropdown_item__CnSGm:nth-child(${yearIndex + 1})`;
 
-        await page.click(specificYearSelector); 
+        await page.click(specificYearSelector);
         await page.waitForSelector(heatmapSvgContainer, { visible: true });
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         const daysInYear = isLeapYear(yearInt) ? 366 : 365;
 
         for (let i = 0; i < daysInYear; i++) {
-            const { dateKey, month, dayOfMonth } = getDateDetailsFromDayOfYear(yearInt, i); 
+            const { dateKey, month, dayOfMonth } = getDateDetailsFromDayOfYear(yearInt, i);
             const dailyBlockSelector = `.m_${month} g:nth-child(${dayOfMonth}) rect`;
             const scrapedData = await scrapeGfgTooltipData(page, dailyBlockSelector, tooltipSelector);
             const finalDateKey = scrapedData.date || dateKey;
             heatmapData[finalDateKey] = scrapedData.count;
         }
-        
+
         return res.status(200).json(heatmapData);
 
     } catch (error) {
-           console.error("Error fetching submissions:", error.message);
-           return res.status(500).json({message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     } finally {
         if (browser) await browser.close();
     }
@@ -183,7 +181,7 @@ const getInstitutionTopThreeRankedUsers = async (req, res) => {
 
     const institution = req.query.institution;
     const url = `https://www.geeksforgeeks.org/colleges/${institution}/`;
-    
+
     if (!institution) return res.status(400).json({ message: "Institution name not provided" });
 
     let browser;
@@ -214,18 +212,16 @@ const getInstitutionTopThreeRankedUsers = async (req, res) => {
                 return {
                     rank: rowIndex + 1,
                     username: username,
-                    userProblemsSolved : userProblemsSolved!="NA" ? parseInt(userProblemsSolved) : "NA",
-                    userCodingScore : userCodingScore!="NA" ? parseInt(userCodingScore) : "NA",
-                    userPotdStreak : userPotdStreak!="NA" ? parseInt(userPotdStreak) : "NA",
+                    userProblemsSolved: userProblemsSolved != "NA" ? parseInt(userProblemsSolved) : "NA",
+                    userCodingScore: userCodingScore != "NA" ? parseInt(userCodingScore) : "NA",
+                    userPotdStreak: userPotdStreak != "NA" ? parseInt(userPotdStreak) : "NA",
                 };
             });
         });
 
         return res.status(200).json({ institution, users: data });
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch institution top 10 ranked users"});
+        return handleError(res, error, "Failed to fetch institution top 10 ranked users");
     } finally {
         if (browser) await browser.close();
     }
@@ -235,7 +231,7 @@ const getInstitutionInfo = async (req, res) => {
 
     const institution = req.query.institution;
     const url = `https://www.geeksforgeeks.org/colleges/${institution}/`;
-    
+
     if (!institution) return res.status(400).json({ message: "Institution name not provided" });
 
     let browser;
@@ -262,10 +258,10 @@ const getInstitutionInfo = async (req, res) => {
             const institutionRegisteredUsersCount = getText(institutionRegisteredUsersCountElement);
 
             const institutionData = {
-                institutionName : institutionName,
-                institutionLocation : institutionLocation,
-                institutionUrl : institutionUrl,
-                institutionRegisteredUsersCount : institutionRegisteredUsersCount!="NA" ? parseInt(institutionRegisteredUsersCount) : "NA",
+                institutionName: institutionName,
+                institutionLocation: institutionLocation,
+                institutionUrl: institutionUrl,
+                institutionRegisteredUsersCount: institutionRegisteredUsersCount != "NA" ? parseInt(institutionRegisteredUsersCount) : "NA",
             }
 
             return institutionData;
@@ -273,9 +269,7 @@ const getInstitutionInfo = async (req, res) => {
 
         return res.status(200).json({ institution, data: data });
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch institution info"});
+        return handleError(res, error, "Failed to fetch institution info");
     } finally {
         if (browser) await browser.close();
     }
