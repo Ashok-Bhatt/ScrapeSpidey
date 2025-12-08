@@ -1,11 +1,11 @@
 import { getDailyApiUsageData, getRequestsData } from "../controllers/analytics.controller.js";
 import { Router } from "express";
 import { protectRoute } from "../middlewares/auth.middleware.js";
-import {getAnalytics} from "../middlewares/analytics.middleware.js";
+import { getAnalytics } from "../middlewares/analytics.middleware.js";
 
 const router = Router();
 
 router.route("/daily-usage").get(protectRoute, getAnalytics, getDailyApiUsageData);
-router.route("/requests/").get(protectRoute, getAnalytics, getRequestsData);
+router.route("/requests").get(protectRoute, getAnalytics, getRequestsData);
 
-export {router};
+export { router };
