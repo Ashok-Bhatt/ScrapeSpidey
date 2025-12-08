@@ -1,17 +1,18 @@
-import {configChromeDriver, configBrowserPage} from "../utils/scrapeConfig.js"
+import { configChromeDriver, configBrowserPage } from "../utils/scrapeConfig.js"
+import handleError from "../utils/errorHandler.js";
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;
     const url = `https://www.hackerrank.com/profile/${username}/`;
 
-    if (!username) return res.status(400).json({message : "Username not found"});
+    if (!username) return res.status(400).json({ message: "Username not found" });
 
     let browser;
     let page;
 
     try {
         browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({message: "Failed to setup browser"});
+        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
 
         page = await configBrowserPage(browser, url, 'domcontentloaded', '.hr-heading-02.profile-title.ellipsis', 30000, 30000);
 
@@ -25,37 +26,35 @@ const getUserInfo = async (req, res) => {
             const badgesElement = Array.from(document.querySelectorAll(".badges-list .hacker-badge"));
             const certificateElement = Array.from(document.querySelectorAll(".hacker-certificates .hacker-certificate"));
 
-            const badges = badgesElement.map((badge)=>{
+            const badges = badgesElement.map((badge) => {
                 return {
-                    image : badge.querySelector(".badge-icon")?.getAttribute("xlink:href"),
-                    title : getText(badge.querySelector(".badge-title")),
+                    image: badge.querySelector(".badge-icon")?.getAttribute("xlink:href"),
+                    title: getText(badge.querySelector(".badge-title")),
                     stars: Array.from(badge.querySelectorAll(".star-section>svg>svg")).length,
                 }
             })
 
-            const certificates = certificateElement.map((certificate)=>{
+            const certificates = certificateElement.map((certificate) => {
                 return {
-                    link : certificate ? HACKERRANK_DOMAIN + certificate.getAttribute("href") : "",
-                    title : getText(certificate.querySelector(".certificate_v3-heading")).replace("Certificate: ", ""),
+                    link: certificate ? HACKERRANK_DOMAIN + certificate.getAttribute("href") : "",
+                    title: getText(certificate.querySelector(".certificate_v3-heading")).replace("Certificate: ", ""),
                 }
             })
 
             const hackerrankData = {
-                username : username,
+                username: username,
                 profileImage: profileImageElement.getAttribute("src"),
                 badges: badges,
-                certificates : certificates,
+                certificates: certificates,
             };
 
             return hackerrankData;
         }, username);
 
         return res.status(200).json(data);
-        
+
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     } finally {
         if (browser) await browser.close();
     }

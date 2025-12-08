@@ -2,6 +2,7 @@ import ApiPoints from "../models/apiPoints.model.js";
 import apiLogs from "../models/apiLogs.model.js";
 import { DAILY_API_POINT_LIMIT } from "../constants.js"
 import Project from "../models/project.model.js";
+import handleError from "../utils/errorHandler.js";
 
 const getDailyApiUsageData = async (req, res) => {
     try {
@@ -38,9 +39,7 @@ const getDailyApiUsageData = async (req, res) => {
 
         return res.status(200).json(dailyUsageData);
     } catch (error) {
-        console.log("Error in analytics controller:", error);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something went wrong!" });
+        return handleError(res, error, "Error in analytics controller:");
     }
 }
 
@@ -65,9 +64,7 @@ const getRequestsData = async (req, res) => {
         let requestsData = await apiLogs.find({ apiKey, createdAt: { $gt: new Date(intervalStarting), $lt: new Date(intervalEnding) }, endpoint: { $not: /^\/api\/v1\/analytics/ } });
         return res.status(200).json(requestsData);
     } catch (error) {
-        console.log("Error in analytics controller:", error);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Something went wrong!" });
+        return handleError(res, error, "Error in analytics controller:");
     }
 }
 

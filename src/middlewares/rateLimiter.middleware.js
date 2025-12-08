@@ -1,5 +1,6 @@
 import ApiPoints from "../models/apiPoints.model.js";
 import { getApiCost } from "../utils/apiCost.js";
+import handleError from "../utils/errorHandler.js";
 
 const checkLimit = async (req, res, next) => {
     try {
@@ -36,9 +37,7 @@ const checkLimit = async (req, res, next) => {
             next();
         }
     } catch (error) {
-        console.log("Error in rateLimiter middleware:", error.message);
-        console.log(error.stack)
-        return res.status(500).json({ message: "Internal Server Error!" });
+        return handleError(res, error, "Internal Server Error!");
     }
 }
 

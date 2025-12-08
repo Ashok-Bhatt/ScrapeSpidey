@@ -1,5 +1,6 @@
 import News from "../models/news.model.js";
 import { destroyFile, uploadFile } from "../utils/cloudinary.js";
+import handleError from "../utils/errorHandler.js";
 
 const createNews = async (req, res) => {
   try {
@@ -23,9 +24,7 @@ const createNews = async (req, res) => {
     if (!newNews) return res.status(500).json({ message: "News not created!" });
     return res.status(201).json({ message: "News created successfully!" });
   } catch (error) {
-    console.log("Error while creating news:", error.message);
-    console.log(error.stack);
-    return res.status(500).json({ message: "Something Went Wrong! News not created!" });
+    return handleError(res, error, "Error while creating news:");
   }
 }
 
@@ -34,9 +33,7 @@ const getAllNews = async (req, res) => {
     const allNews = await News.find().sort({ date: -1 });
     return res.status(200).json({ news: allNews });
   } catch (error) {
-    console.log("Error while fetching news:", error.message);
-    console.log(error.stack);
-    return res.status(500).json({ message: "Something went wrong while fetching news!" });
+    return handleError(res, error, "Error while fetching news:");
   }
 };
 
@@ -68,9 +65,7 @@ const updateNews = async (req, res) => {
 
     return res.status(200).json({ message: "News updated successfully!" });
   } catch (error) {
-    console.log("Error while updating news:", error.message);
-    console.log(error.stack);
-    return res.status(500).json({ message: "Something went wrong! News not updated!" });
+    return handleError(res, error, "Error while updating news:");
   }
 };
 
@@ -90,9 +85,7 @@ const deleteNews = async (req, res) => {
 
     return res.status(200).json({ message: "News deleted successfully!" });
   } catch (error) {
-    console.log("Error while deleting news:", error.message);
-    console.log(error.stack);
-    return res.status(500).json({ message: "Something went wrong! News not deleted!" });
+    return handleError(res, error, "Error while deleting news:");
   }
 };
 

@@ -12,7 +12,8 @@ import {
     fetchQuestionOfToday,
     fetchCodingChallengeMedal,
 } from "../services/leetcode.service.js";
-import {getNormalizedLeetCodeHeatmap} from "../utils/calendar.js";
+import { getNormalizedLeetCodeHeatmap } from "../utils/calendar.js";
+import handleError from "../utils/errorHandler.js";
 
 // Controller helpers - one endpoint per service function
 const validateParam = (value) => value !== undefined && value !== null && value !== "";
@@ -25,9 +26,7 @@ const getUserProfile = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch LeetCode user profile." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -39,9 +38,7 @@ const getLanguageStats = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch language statistics." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -55,9 +52,7 @@ const getUserCalendar = async (req, res) => {
         data["matchedUser"]["userCalendar"]["submissionCalendar"] = getNormalizedLeetCodeHeatmap(JSON.parse(data["matchedUser"]["userCalendar"]["submissionCalendar"]), year);
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -70,9 +65,7 @@ const getRecentAcSubmissions = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch recent accepted submissions." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -84,9 +77,7 @@ const getUserBadges = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user badges." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -98,9 +89,7 @@ const getContestRanking = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch contest ranking." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -112,9 +101,7 @@ const getSkillStats = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch skill stats." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -127,9 +114,7 @@ const getUserProfileQuestionProgressV2 = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user question progress." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -141,9 +126,7 @@ const getUserSessionProgress = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user session progress." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -153,9 +136,7 @@ const getContestRatingHistogram = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch contest rating histogram." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -165,9 +146,7 @@ const getQuestionOfToday = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch question of today." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -180,9 +159,7 @@ const getCodingChallengeMedal = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch coding challenge medal." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
