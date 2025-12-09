@@ -6,20 +6,19 @@ import upload from "../middlewares/multer.middleware.js";
 
 const router = Router();
 
-router.post("/login", login);
-router.post("/signup", createAccount);
-router.post("/logout", logout);
+// Public Routes
+router.route("/login").post(login);
+router.route("/signup").post(createAccount);
+router.route("/logout").post(logout);
 
 // Protected routes
-router.get("/check", protectRoute, checkAuth);
-router.patch("/password", protectRoute, changePassword);
-router.patch("/", protectRoute, updateUserInfo);
-router.patch("/profile-pic", protectRoute, upload.single("profilePic"), uploadProfilePic)
-router.patch("/api-key", protectRoute, updateUserApiKey);
+router.route("/check").get(protectRoute, checkAuth);
+router.route("/password").patch(protectRoute, changePassword);
+router.route("/").patch(protectRoute, updateUserInfo);
+router.route("/profile-pic").patch(protectRoute, upload.single("profilePic"), uploadProfilePic);
+router.route("/api-key").patch(protectRoute, updateUserApiKey);
 
 // Admin Routes
-router.get("/", protectRoute, adminCheck, getUsers);
+router.route("/").get(protectRoute, adminCheck, getUsers);
 
-export {
-    router,
-}
+export { router };

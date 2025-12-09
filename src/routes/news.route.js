@@ -6,9 +6,10 @@ import upload from "../middlewares/multer.middleware.js";
 
 const router = Router();
 
-router.route("/").post(protectRoute, adminCheck, upload.single("newsImage"), createNews);
-router.route("/").get(getAllNews);
-router.route("/").delete(protectRoute, adminCheck, deleteNews);
-router.route("/").patch(protectRoute, adminCheck, upload.single("newsImage"), updateNews);
+router.route("/")
+    .post(protectRoute, adminCheck, upload.single("newsImage"), createNews)
+    .get(getAllNews)
+    .delete(protectRoute, adminCheck, deleteNews)
+    .patch(protectRoute, adminCheck, upload.single("newsImage"), updateNews);
 
-export {router};
+export { router };
