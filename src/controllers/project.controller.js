@@ -105,6 +105,17 @@ const changeDailyApiLimit = async (req, res) => {
     }
 }
 
+const getUserProjects = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        // Verify user exists if needed, but finding projects is sufficient
+        const projects = await Project.find({ userId }).sort({ createdAt: -1 }).select("-userId -__v");
+        return res.status(200).json(projects);
+    } catch (error) {
+        return handleError(res, error, "Error in getUserProjects controller:");
+    }
+};
+
 export {
     getProjects,
     getProjectById,
@@ -112,4 +123,5 @@ export {
     updateProject,
     deleteProject,
     changeDailyApiLimit,
+    getUserProjects,
 };
