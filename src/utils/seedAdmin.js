@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD } from "../config.js";
+import handleError from "../utils/errorHandler.js";
 
 const seedAdmin = async () => {
     try {
