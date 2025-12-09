@@ -1,7 +1,6 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD } from "../config.js";
-import handleError from "./errorHandler.js";
 
 const seedAdmin = async () => {
     try {
@@ -24,7 +23,8 @@ const seedAdmin = async () => {
         await newAdmin.save();
         console.log("Admin seeded successfully.");
     } catch (error) {
-        return handleError(res, error, "Error while seeding admin:");
+        console.log("Something went wrong while seeding the admin: ", error.message);
+        console.log(error.stack);
     }
 };
 
