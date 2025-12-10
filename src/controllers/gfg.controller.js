@@ -1,4 +1,5 @@
 import { configChromeDriver, configBrowserPage } from "../utils/scrapeConfig.js"
+import axios from "axios";
 import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../utils/calendar.js"
 import handleError from "../utils/errorHandler.js";
 
@@ -275,10 +276,34 @@ const getInstitutionInfo = async (req, res) => {
     }
 };
 
+const testing = async (req, res) => {
+    try {
+        const { username, year } = req.query;
+
+        if (!username || !year) {
+            return res.status(400).json({ message: "Username and Year are required" });
+        }
+
+        const payload = {
+            handle: username,
+            month: "",
+            requestType: "getYearwiseUserSubmissions",
+            year: year
+        };
+
+        const response = await axios.post("https://practiceapi.geeksforgeeks.org/api/v1/user/problems/submissions/", payload);
+
+        return res.status(200).json(response.data);
+    } catch (error) {
+        return handleError(res, error, "Failed to fetch testing data");
+    }
+};
+
 
 export {
     getUserInfo,
     getUserSubmissions,
     getInstitutionTopThreeRankedUsers,
-    getInstitutionInfo
+    getInstitutionInfo,
+    testing
 }
