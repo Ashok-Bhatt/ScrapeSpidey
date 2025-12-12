@@ -11,11 +11,11 @@ import {
 	getContestRatingHistogram,
 	getQuestionOfToday,
 	getCodingChallengeMedal,
-} from "../controllers/leetcode.controller.js";
+} from "../../controllers/v1/leetcode.controller.js";
 import { Router } from "express";
-import {verifyApiKey} from "../middlewares/apikey.middleware.js"
-import {checkLimit} from "../middlewares/rateLimiter.middleware.js";
-import {getAnalytics} from "../middlewares/analytics.middleware.js";
+import {verifyApiKey} from "../../middlewares/apikey.middleware.js"
+import {checkLimit} from "../../middlewares/rateLimiter.middleware.js";
+import {getAnalytics} from "../../middlewares/analytics.middleware.js";
 
 const router = Router();
 

@@ -11,9 +11,9 @@ import {
     fetchContestRatingHistogram,
     fetchQuestionOfToday,
     fetchCodingChallengeMedal,
-} from "../services/leetcode.service.js";
-import { getNormalizedLeetCodeHeatmap } from "../utils/calendar.js";
-import handleError from "../utils/errorHandler.js";
+} from "../../services/leetcode.service.js";
+import { getNormalizedLeetCodeHeatmap } from "../../utils/calendar.js";
+import handleError from "../../utils/errorHandler.js";
 
 // Controller helpers - one endpoint per service function
 const validateParam = (value) => value !== undefined && value !== null && value !== "";

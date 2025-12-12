@@ -1,6 +1,6 @@
-import { configChromeDriver, configBrowserPage } from "../utils/scrapeConfig.js";
-import { getNormalizedCodeChefHeatmap } from "../utils/calendar.js"
-import handleError from "../utils/errorHandler.js";
+import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js";
+import { getNormalizedCodeChefHeatmap } from "../../utils/calendar.js"
+import handleError from "../../utils/errorHandler.js";
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;

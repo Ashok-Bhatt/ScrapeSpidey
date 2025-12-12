@@ -1,7 +1,7 @@
-import Project from "../models/project.model.js";
+import Project from "../../models/project.model.js";
 import { v4 as uuid } from "uuid"
 import mongoose from "mongoose";
-import handleError from "../utils/errorHandler.js";
+import handleError from "../../utils/errorHandler.js";
 
 const getProjects = async (req, res) => {
     try {

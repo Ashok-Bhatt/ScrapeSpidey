@@ -1,6 +1,6 @@
-import { configChromeDriver, configBrowserPage } from "../utils/scrapeConfig.js"
-import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../utils/calendar.js";
-import handleError from "../utils/errorHandler.js";
+import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js"
+import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.js";
+import handleError from "../../utils/errorHandler.js";
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;
@@ -154,7 +154,45 @@ const getUserSubmissions = async (req, res) => {
     }
 }
 
+const getUserBadges = async (req, res) => {
+    const username = req.query.user;
+    const url = `https://www.interviewbit.com/profile/${username}/`;
+
+    if (!username) return res.status(400).json({ message: "Username not found" });
+
+    let browser;
+    let page;
+
+    try {
+        browser = await configChromeDriver();
+        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
+
+        page = await configBrowserPage(browser, url, 'domcontentloaded', '.recharts-surface', 30000, 30000);
+
+        const data = await page.evaluate(() => {
+
+            const getText = (element) => element?.textContent || "NA";
+
+            const badges = Array.from(document.querySelectorAll(".profile-badge-progress-tile")).map((badge) => ({
+                title: getText(badge.querySelector(".profile-badge-progress-tile__title")),
+                date: getText(badge.querySelector(".profile-badge-progress-tile__sub-title")),
+                image: badge.querySelector(".profile-badge-progress-tile__badge-img")?.getAttribute("style"),
+            }));
+
+            return badges;
+        });
+
+        return res.status(200).json(data);
+
+    } catch (error) {
+        return handleError(res, error, "Failed to fetch data");
+    } finally {
+        if (browser) await browser.close();
+    }
+}
+
 export {
     getUserInfo,
     getUserSubmissions,
+    getUserBadges,
 }

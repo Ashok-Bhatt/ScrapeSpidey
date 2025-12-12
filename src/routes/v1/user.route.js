@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { login, createAccount, logout, checkAuth, changePassword, updateUserInfo, getUsers, uploadProfilePic, updateUserApiKey } from "../controllers/user.controller.js";
-import { protectRoute } from "../middlewares/auth.middleware.js";
-import { adminCheck } from "../middlewares/admin.middleware.js";
-import upload from "../middlewares/multer.middleware.js";
+import { login, createAccount, logout, checkAuth, changePassword, updateUserInfo, getUsers, uploadProfilePic, updateUserApiKey } from "../../controllers/v1/user.controller.js";
+import { protectRoute } from "../../middlewares/auth.middleware.js";
+import { adminCheck } from "../../middlewares/admin.middleware.js";
+import upload from "../../middlewares/multer.middleware.js";
 
 const router = Router();
 

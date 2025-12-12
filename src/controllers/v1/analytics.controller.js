@@ -1,8 +1,8 @@
-import ApiPoints from "../models/apiPoints.model.js";
-import apiLogs from "../models/apiLogs.model.js";
-import { DAILY_API_POINT_LIMIT } from "../constants.js"
-import Project from "../models/project.model.js";
-import handleError from "../utils/errorHandler.js";
+import ApiPoints from "../../models/apiPoints.model.js";
+import apiLogs from "../../models/apiLogs.model.js";
+import { DAILY_API_POINT_LIMIT } from "../../constants.js"
+import Project from "../../models/project.model.js";
+import handleError from "../../utils/errorHandler.js";
 
 const getDailyApiUsageData = async (req, res) => {
     try {
