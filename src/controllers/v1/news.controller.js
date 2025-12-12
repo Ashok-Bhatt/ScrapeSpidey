@@ -1,6 +1,6 @@
-import News from "../models/news.model.js";
-import { destroyFile, uploadFile } from "../utils/cloudinary.js";
-import handleError from "../utils/errorHandler.js";
+import News from "../../models/news.model.js";
+import { destroyFile, uploadFile } from "../../utils/cloudinary.js";
+import handleError from "../../utils/errorHandler.js";
 
 const createNews = async (req, res) => {
   try {

@@ -1,10 +1,10 @@
-import User from "../models/user.model.js";
-import { generateToken } from "../utils/tokenGenerator.js";
-import { isValidEmail, isValidPassword } from "../utils/validation.js";
+import User from "../../models/user.model.js";
+import { generateToken } from "../../utils/tokenGenerator.js";
+import { isValidEmail, isValidPassword } from "../../utils/validation.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
-import { destroyFile, uploadFile } from "../utils/cloudinary.js";
-import handleError from "../utils/errorHandler.js";
+import { destroyFile, uploadFile } from "../../utils/cloudinary.js";
+import handleError from "../../utils/errorHandler.js";
 
 const createAccount = async (req, res) => {
 

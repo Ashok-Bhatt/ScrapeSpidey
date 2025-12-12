@@ -1,6 +1,7 @@
-import { configChromeDriver, configBrowserPage } from "../utils/scrapeConfig.js"
-import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../utils/calendar.js"
-import handleError from "../utils/errorHandler.js";
+import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js"
+import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.js"
+import handleError from "../../utils/errorHandler.js";
+import axios from "axios";
 
 const getUserInfo = async (req, res) => {
     const username = req.query.user;
@@ -177,6 +178,20 @@ const getUserSubmissions = async (req, res) => {
     }
 }
 
+const getUserProblemsSolved = async (req, res) => {
+    try {
+        const username = req.query.user;
+        if (!username) return res.status(400).json({ message: "Username not found" });
+
+        const reponse = await axios.post("https://practiceapi.geeksforgeeks.org/api/v1/user/problems/submissions/", { handle: username, requestType: "", year: "", month: "" })
+        const data = reponse.data;
+
+        return res.status(200).json(data);
+    } catch (error) {
+        return handleError(res, error, "Failed to fetch data");
+    }
+}
+
 const getInstitutionTopThreeRankedUsers = async (req, res) => {
 
     const institution = req.query.institution;
@@ -280,5 +295,6 @@ export {
     getUserInfo,
     getUserSubmissions,
     getInstitutionTopThreeRankedUsers,
-    getInstitutionInfo
+    getInstitutionInfo,
+    getUserProblemsSolved,
 }

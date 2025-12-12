@@ -1,7 +1,7 @@
-import { getProjects, getProjectById, deleteProject, updateProject, createProject, changeDailyApiLimit, getUserProjects } from "../controllers/project.controller.js";
+import { getProjects, getProjectById, deleteProject, updateProject, createProject, changeDailyApiLimit, getUserProjects } from "../../controllers/v1/project.controller.js";
 import { Router } from "express";
-import { protectRoute } from "../middlewares/auth.middleware.js";
-import { adminCheck } from "../middlewares/admin.middleware.js";
+import { protectRoute } from "../../middlewares/auth.middleware.js";
+import { adminCheck } from "../../middlewares/admin.middleware.js";
 
 const router = Router();
 
