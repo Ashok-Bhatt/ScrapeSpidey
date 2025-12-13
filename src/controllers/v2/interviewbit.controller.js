@@ -27,7 +27,7 @@ const getUserInfo = async (req, res) => {
 const getUserSubmissions = async (req, res) => {
     try {
         const username = req.query.user;
-        const year = req.query.year || new Date().getFullYear();
+        const year = parseInt(req.query.year) || new Date().getFullYear();
 
         const headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -46,7 +46,7 @@ const getUserSubmissions = async (req, res) => {
             heatmapData[data[i].date] = data[i].count;
         }
 
-        const normalizedHeatmapData = getNormalizedInterviewBitHeatmap(heatmapData, parseInt(year));
+        const normalizedHeatmapData = getNormalizedInterviewBitHeatmap(heatmapData, year);
 
         return res.status(200).json(normalizedHeatmapData);
     } catch (error) {

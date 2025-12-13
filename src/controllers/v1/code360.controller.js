@@ -37,13 +37,13 @@ const getUserInfo = async (req, res) => {
 const getUserSubmissions = async (req, res) => {
     try {
         const username = req.query.user;
-        const year = req.query.year || new Date().getFullYear();
+        const year = parseInt(req.query.year) || new Date().getFullYear();
 
         const userProfileResponse = await axios.get(`https://www.naukri.com/code360/api/v3/public_section/profile/user_details?uuid=${username}&request_differentiator=${new Date()}&app_context=publicsection&naukri_request=true`, { headers });
         const userProfileData = userProfileResponse.data["data"];
 
         const userContributionsResponse = await axios.get(`https://www.naukri.com/code360/api/v3/public_section/profile/contributions?uuid=${userProfileData["uuid"]}&end_date=${new Date().toISOString()}&start_date=${new Date().toISOString()}&is_stats_required=true&unified=true&request_differentiator=${new Date()}&app_context=publicsection&naukri_request=true`, { headers });
-        const userContributionsData = getNormalizedCode360Heatmap(userContributionsResponse.data["data"]["contribution_map"], parseInt(year));
+        const userContributionsData = getNormalizedCode360Heatmap(userContributionsResponse.data["data"]["contribution_map"], year);
 
         return res.status(200).json(userContributionsData);
 

@@ -91,8 +91,7 @@ const getUserInfo = async (req, res) => {
 
 const getUserSubmissions = async (req, res) => {
     const username = req.query.user;
-    const year = req.query.year || new Date().getFullYear().toString();
-    const yearInt = parseInt(year, 10);
+    const year = parseInt(req.query.year) || new Date().getFullYear();
     let heatmapData = {};
 
     const url = `https://www.interviewbit.com/profile/${username}`;
@@ -122,7 +121,7 @@ const getUserSubmissions = async (req, res) => {
             options => options.map(option => option.textContent.trim())
         );
 
-        const yearIndex = heatmapOptionValues.indexOf(year);
+        const yearIndex = heatmapOptionValues.indexOf(year.toString());
         if (yearIndex === -1) return res.status(404).json({ message: `Year ${year} not found in dropdown options.` });
         console.log(yearIndex, typeof yearIndex);
 
@@ -135,10 +134,9 @@ const getUserSubmissions = async (req, res) => {
         const dailyBlocksCount = await page.evaluate(() => {
             return document.querySelectorAll(".profile-activity-heatmap__day:not(.profile-activity-heatmap__day--disabled)").length;
         })
-        console.log(dailyBlocksCount);
 
         for (let i = 0; i < dailyBlocksCount; i++) {
-            const { dateKey, month, dayOfMonth } = getDateDetailsFromDayOfYear(yearInt, i);
+            const { dateKey, month, dayOfMonth } = getDateDetailsFromDayOfYear(year, i);
             const dailyBlockSelector = `.profile-activity-heatmap__day:not(.profile-activity-heatmap__day--disabled):nth-child(${i + 1})`;
             const scrapedData = await scrapeGfgTooltipData(page, dailyBlockSelector, tooltipSelector);
             const finalDateKey = scrapedData.date || dateKey;
