@@ -12,9 +12,7 @@ const headers = {
 const getUserInfo = async (req, res) => {
     try {
         const username = req.query.user;
-        const year = req.query.year || new Date().getFullYear();
         const includeContests = req.query.includeContests || false;
-        const includeContributions = req.query.includeContributions || false;
 
         const userProfileResponse = await axios.get(`https://www.naukri.com/code360/api/v3/public_section/profile/user_details?uuid=${username}&request_differentiator=${new Date()}&app_context=publicsection&naukri_request=true`, { headers });
         const userProfileData = userProfileResponse.data["data"];
@@ -29,13 +27,6 @@ const getUserInfo = async (req, res) => {
             userProfileData["contests"] = userContestData;
         }
 
-        if (includeContributions) {
-            const userContributionsResponse = await axios.get(`https://www.naukri.com/code360/api/v3/public_section/profile/contributions?uuid=${userProfileData["uuid"]}&end_date=${new Date().toISOString()}&start_date=${new Date().toISOString()}&is_stats_required=true&unified=true&request_differentiator=${new Date()}&app_context=publicsection&naukri_request=true`, { headers });
-            const userContributionsData = userContributionsResponse.data["data"];
-            userContributionsData["contribution_map"] = getNormalizedCode360Heatmap(userContributionsData["contribution_map"], parseInt(year));
-            userProfileData["contributions"] = userContributionsData;
-        }
-
         return res.status(200).json(userProfileData);
 
     } catch (error) {
@@ -43,6 +34,25 @@ const getUserInfo = async (req, res) => {
     }
 };
 
+const getUserSubmissions = async (req, res) => {
+    try {
+        const username = req.query.user;
+        const year = req.query.year || new Date().getFullYear();
+
+        const userProfileResponse = await axios.get(`https://www.naukri.com/code360/api/v3/public_section/profile/user_details?uuid=${username}&request_differentiator=${new Date()}&app_context=publicsection&naukri_request=true`, { headers });
+        const userProfileData = userProfileResponse.data["data"];
+
+        const userContributionsResponse = await axios.get(`https://www.naukri.com/code360/api/v3/public_section/profile/contributions?uuid=${userProfileData["uuid"]}&end_date=${new Date().toISOString()}&start_date=${new Date().toISOString()}&is_stats_required=true&unified=true&request_differentiator=${new Date()}&app_context=publicsection&naukri_request=true`, { headers });
+        const userContributionsData = getNormalizedCode360Heatmap(userContributionsResponse.data["data"]["contribution_map"], parseInt(year));
+
+        return res.status(200).json(userContributionsData);
+
+    } catch (error) {
+        return handleError(res, error, "Failed to fetch contributions");
+    }
+};
+
 export {
     getUserInfo,
+    getUserSubmissions,
 }
