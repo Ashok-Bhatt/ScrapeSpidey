@@ -233,6 +233,39 @@ const getNormalizedCode360Heatmap = (heatmap, year) => {
     return getSortedHeatmap(normalizedHeatmap);
 }
 
+const getNormalizedGfgHeatmap = (heatmap, year) => {
+    if (!heatmap || typeof heatmap !== 'object' || Array.isArray(heatmap) || typeof year !== 'number' || year < 1900) {
+        console.log(!heatmap, typeof heatmap !== 'object', Array.isArray(heatmap), typeof year !== 'number', year < 1900);
+        return {};
+    }
+
+    const getAllDatesInYear = (y) => {
+        const dates = [];
+        let date = new Date(y, 0, 1);
+        const end = new Date(y + 1, 0, 1);
+
+        while (date < end) {
+            const yearStr = date.getFullYear();
+            const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(date.getDate()).padStart(2, '0');
+
+            dates.push(`${yearStr}-${monthStr}-${dayStr}`);
+            date.setDate(date.getDate() + 1);
+        }
+        return dates;
+    };
+
+    const allDates = getAllDatesInYear(year);
+
+    const normalizedHeatmap = {};
+
+    allDates.forEach(date => {
+        normalizedHeatmap[date] = heatmap[date]?.total || 0;
+    });
+
+    return getSortedHeatmap(normalizedHeatmap);
+}
+
 export {
     isLeapYear,
     getDateDetailsFromDayOfYear,
@@ -242,4 +275,5 @@ export {
     getNormalizedLeetCodeHeatmap,
     getNormalizedInterviewBitHeatmap,
     getNormalizedCode360Heatmap,
+    getNormalizedGfgHeatmap,
 }
