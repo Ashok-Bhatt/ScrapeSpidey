@@ -120,8 +120,7 @@ const getUserInfo = async (req, res) => {
 
 const getUserSubmissions = async (req, res) => {
     const username = req.query.user;
-    const year = req.query.year || new Date().getFullYear().toString();
-    const yearInt = parseInt(year, 10);
+    const year = parseInt(req.query.year) || new Date().getFullYear();
     let heatmapData = {};
 
     const url = `https://www.geeksforgeeks.org/profile/${username}?tab=activity`;
@@ -150,7 +149,7 @@ const getUserSubmissions = async (req, res) => {
             options => options.map(option => option.textContent.trim())
         );
 
-        const yearIndex = heatmapOptionValues.indexOf(year);
+        const yearIndex = heatmapOptionValues.indexOf(year.toString());
         if (yearIndex === -1) return res.status(404).json({ message: `Year ${year} not found in dropdown options.` });
 
         const specificYearSelector = `div.HeatMapHeader_dropdown_item__CnSGm:nth-child(${yearIndex + 1})`;
@@ -159,10 +158,10 @@ const getUserSubmissions = async (req, res) => {
         await page.waitForSelector(heatmapSvgContainer, { visible: true });
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const daysInYear = isLeapYear(yearInt) ? 366 : 365;
+        const daysInYear = isLeapYear(year) ? 366 : 365;
 
         for (let i = 0; i < daysInYear; i++) {
-            const { dateKey, month, dayOfMonth } = getDateDetailsFromDayOfYear(yearInt, i);
+            const { dateKey, month, dayOfMonth } = getDateDetailsFromDayOfYear(year, i);
             const dailyBlockSelector = `.m_${month} g:nth-child(${dayOfMonth}) rect`;
             const scrapedData = await scrapeGfgTooltipData(page, dailyBlockSelector, tooltipSelector);
             const finalDateKey = scrapedData.date || dateKey;
