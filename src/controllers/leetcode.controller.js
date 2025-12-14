@@ -8,19 +8,12 @@ import {
     fetchSkillStats,
     fetchUserProfileQuestionProgressV2,
     fetchUserSessionProgress,
-    fetchCreatedPublicFavoriteList,
-    fetchCanSeeOtherSubmissionHistory,
-    fetchGlobalData,
-    fetchGetUserProfile,
     fetchContestRatingHistogram,
-    fetchYearlyMedalsQualified,
-    fetchPremiumBetaFeatures,
-    fetchStreakCounter,
-    fetchCurrentTimestamp,
     fetchQuestionOfToday,
     fetchCodingChallengeMedal,
-    fetchSiteAnnouncements,
 } from "../services/leetcode.service.js";
+import { getNormalizedLeetCodeHeatmap } from "../utils/calendar.js";
+import handleError from "../utils/errorHandler.js";
 
 // Controller helpers - one endpoint per service function
 const validateParam = (value) => value !== undefined && value !== null && value !== "";
@@ -33,9 +26,7 @@ const getUserProfile = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch LeetCode user profile." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -47,9 +38,7 @@ const getLanguageStats = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch language statistics." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -60,11 +49,10 @@ const getUserCalendar = async (req, res) => {
     try {
         const data = await fetchUserCalendar(username, year);
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user calendar." });
+        data["matchedUser"]["userCalendar"]["submissionCalendar"] = getNormalizedLeetCodeHeatmap(JSON.parse(data["matchedUser"]["userCalendar"]["submissionCalendar"]), year);
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -77,9 +65,7 @@ const getRecentAcSubmissions = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch recent accepted submissions." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -91,9 +77,7 @@ const getUserBadges = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user badges." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -105,9 +89,7 @@ const getContestRanking = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch contest ranking." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -119,9 +101,7 @@ const getSkillStats = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch skill stats." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -134,9 +114,7 @@ const getUserProfileQuestionProgressV2 = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user question progress." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -148,63 +126,7 @@ const getUserSessionProgress = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user session progress." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getCreatedPublicFavoriteList = async (req, res) => {
-    const userSlug = req.query.userSlug || req.query.user;
-    if (!validateParam(userSlug)) return res.status(400).json({ message: "userSlug not provided" });
-    try {
-        const data = await fetchCreatedPublicFavoriteList(userSlug);
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user's public favorite lists." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getCanSeeOtherSubmissionHistory = async (req, res) => {
-    const userSlug = req.query.userSlug || req.query.user;
-    if (!validateParam(userSlug)) return res.status(400).json({ message: "userSlug not provided" });
-    try {
-        const data = await fetchCanSeeOtherSubmissionHistory(userSlug);
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not determine submission history permission." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getGlobalData = async (req, res) => {
-    try {
-        const data = await fetchGlobalData();
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch global data." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getGetUserProfile = async (req, res) => {
-    const username = req.query.user || req.query.username;
-    if (!validateParam(username)) return res.status(400).json({ message: "Username not provided" });
-    try {
-        const data = await fetchGetUserProfile(username);
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user active badge." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -214,58 +136,7 @@ const getContestRatingHistogram = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch contest rating histogram." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getYearlyMedalsQualified = async (req, res) => {
-    const excludeAcquired = req.query.excludeAcquired === "true";
-    try {
-        const data = await fetchYearlyMedalsQualified(excludeAcquired);
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch yearly medals qualified." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getPremiumBetaFeatures = async (req, res) => {
-    try {
-        const data = await fetchPremiumBetaFeatures();
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch premium beta features." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getStreakCounter = async (req, res) => {
-    try {
-        const data = await fetchStreakCounter();
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch streak counter." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getCurrentTimestamp = async (req, res) => {
-    try {
-        const data = await fetchCurrentTimestamp();
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch current timestamp." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -275,9 +146,7 @@ const getQuestionOfToday = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch question of today." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -290,21 +159,7 @@ const getCodingChallengeMedal = async (req, res) => {
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch coding challenge medal." });
         return res.status(200).json(data);
     } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
-    }
-};
-
-const getSiteAnnouncements = async (req, res) => {
-    try {
-        const data = await fetchSiteAnnouncements();
-        if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch site announcements." });
-        return res.status(200).json(data);
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stack);
-        return res.status(500).json({ message: "Failed to fetch data", details: error.message });
+        return handleError(res, error, "Failed to fetch data");
     }
 };
 
@@ -318,16 +173,7 @@ export {
     getSkillStats,
     getUserProfileQuestionProgressV2,
     getUserSessionProgress,
-    getCreatedPublicFavoriteList,
-    getCanSeeOtherSubmissionHistory,
-    getGlobalData,
-    getGetUserProfile,
     getContestRatingHistogram,
-    getYearlyMedalsQualified,
-    getPremiumBetaFeatures,
-    getStreakCounter,
-    getCurrentTimestamp,
     getQuestionOfToday,
     getCodingChallengeMedal,
-    getSiteAnnouncements,
 }

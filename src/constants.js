@@ -124,6 +124,10 @@ const LEETCODE_GRAPHQL_QUERIES = {
     userBadges: `
         query userBadges($username: String!) {
             matchedUser(username: $username) {
+                activeBadge {
+                    displayName
+                    icon
+                }
                 badges {
                     id
                     name
@@ -173,39 +177,6 @@ const LEETCODE_GRAPHQL_QUERIES = {
         }
     `,
 
-    canSeeOtherSubmissionHistory: `
-        query canSeeOtherSubmissionHistory($userSlug: String!) {
-            canSeeOtherSubmissionHistory(userSlug: $userSlug)
-        }
-    `,
-
-    globalData: `
-        query globalData {
-            userStatus {
-                userId
-                isSignedIn
-                isMockUser
-                isPremium
-                isVerified
-                username
-                realName
-                avatar
-                isAdmin
-                isSuperuser
-                permissions
-                isTranslator
-                activeSessionId
-                checkedInToday
-                completedFeatureGuides
-                premiumExpiredAt
-                notificationStatus {
-                    lastModified
-                    numUnread
-                }
-            }
-        }
-    `,
-
     userProfileCalendar: `
         query userProfileCalendar($username: String!, $year: Int) {
             matchedUser(username: $username) {
@@ -237,17 +208,6 @@ const LEETCODE_GRAPHQL_QUERIES = {
         }
     `,
 
-    getUserProfile: `
-        query getUserProfile($username: String!) {
-            matchedUser(username: $username) {
-                activeBadge {
-                    displayName
-                    icon
-                }
-            }
-        }
-    `,
-
     contestRatingHistogram: `
         query contestRatingHistogram {
             contestRatingHistogram {
@@ -256,59 +216,6 @@ const LEETCODE_GRAPHQL_QUERIES = {
                 ratingEnd
                 topPercentage
             }
-        }
-    `,
-
-    yearlyMedalsQualified: `
-        query yearlyMedalsQualified($excludeAcquired: Boolean) {
-            yearlyMedalsQualified(excludeAcquired: $excludeAcquired) {
-                awardDescription
-                name
-                obtainDescription
-                slug
-                config {
-                    icon
-                    iconGif
-                    iconGifBackground
-                    iconWearing
-                }
-            }
-        }
-    `,
-
-    premiumBetaFeatures: `
-        query premiumBetaFeatures {
-            premiumBetaFeatures {
-                id
-                featureId
-                title
-                description
-                imageUrl
-                order
-                startsAt
-                endsAt
-                hasAccess
-                optedIn
-                feedbackUrl
-                featureUrl
-                imageHeight
-            }
-        }
-    `,
-
-    getStreakCounter: `
-        query getStreakCounter {
-            streakCounter {
-                streakCount
-                daysSkipped
-                currentDayCompleted
-            }
-        }
-    `,
-
-    currentTimestamp: `
-        query currentTimestamp {
-            currentTimestamp
         }
     `,
 
@@ -348,18 +255,6 @@ const LEETCODE_GRAPHQL_QUERIES = {
                 config {
                     icon
                 }
-            }
-        }
-    `,
-
-    siteAnnouncements: `
-        query siteAnnouncements {
-            siteAnnouncements {
-                title
-                content
-                blacklistUrls
-                whitelistUrls
-                navbarItem
             }
         }
     `,
