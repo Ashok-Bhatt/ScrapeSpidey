@@ -235,7 +235,6 @@ const getNormalizedCode360Heatmap = (heatmap, year) => {
 
 const getNormalizedGfgHeatmap = (heatmap, year) => {
     if (!heatmap || typeof heatmap !== 'object' || Array.isArray(heatmap) || typeof year !== 'number' || year < 1900) {
-        console.log(!heatmap, typeof heatmap !== 'object', Array.isArray(heatmap), typeof year !== 'number', year < 1900);
         return {};
     }
 
@@ -260,7 +259,7 @@ const getNormalizedGfgHeatmap = (heatmap, year) => {
     const normalizedHeatmap = {};
 
     allDates.forEach(date => {
-        normalizedHeatmap[date] = heatmap[date]?.total || 0;
+        normalizedHeatmap[date] = heatmap[date] || 0;
     });
 
     return getSortedHeatmap(normalizedHeatmap);
