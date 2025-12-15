@@ -1,13 +1,11 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import {BROWSERLESS_TOKEN, NODE_ENV } from "../config.js";
-
-puppeteer.use(StealthPlugin());
+import puppeteer from "puppeteer";
+import {NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
 
 const configChromeDriver = async () => {
-    if (NODE_ENV == "development"){
+    try {
         return await puppeteer.launch({
-            headless: false,
+            headless: NODE_ENV=="production" ? "new" : false,
+            executablePath: PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
@@ -15,10 +13,9 @@ const configChromeDriver = async () => {
                 "--disable-features=IsolateOrigins,site-per-process",
             ]
         });
-    } else {
-        return await puppeteer.connect({
-            browserWSEndpoint: `wss://production-sfo.browserless.io?token=${BROWSERLESS_TOKEN}&--disable-http2=true&--disable-features=IsolateOrigins,site-per-process&stealth`,
-        });
+    } catch (error) {
+        console.log(error.stack);
+        return null;
     }
 }
 
