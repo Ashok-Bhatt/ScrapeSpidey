@@ -1,19 +1,30 @@
 import puppeteer from "puppeteer";
-import {NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
+import { NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
 
 const configChromeDriver = async () => {
     try {
-        return await puppeteer.launch({
-            headless: NODE_ENV=="production" ? "new" : false,
-            executablePath: PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+        const launchOptions = {
+            headless: "new",
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
                 "--disable-http2",
                 "--disable-features=IsolateOrigins,site-per-process",
+                "--single-process",
+                "--no-zygote",
             ]
-        });
+        };
+
+        // Only use custom executable path if explicitly set in production
+        if (PUPPETEER_EXECUTABLE_PATH) {
+            launchOptions.executablePath = PUPPETEER_EXECUTABLE_PATH;
+        }
+
+        return await puppeteer.launch(launchOptions);
     } catch (error) {
+        console.log("Failed to launch browser:", error.message);
         console.log(error.stack);
         return null;
     }
@@ -28,7 +39,7 @@ const configBrowserPage = async (browser, url, waitUntilOption, waitSelector, wa
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
     });
-    await page.goto(url, { waitUntil: waitUntilOption, timeout : waitForPageTime });
+    await page.goto(url, { waitUntil: waitUntilOption, timeout: waitForPageTime });
     await page.waitForSelector(waitSelector, { timeout: waitForSelectorTime });
     return page;
 }
