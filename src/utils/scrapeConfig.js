@@ -1,24 +1,32 @@
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import {BROWSERLESS_TOKEN, NODE_ENV } from "../config.js";
-
-puppeteer.use(StealthPlugin());
+import puppeteer from "puppeteer";
+import { NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
 
 const configChromeDriver = async () => {
-    if (NODE_ENV == "development"){
-        return await puppeteer.launch({
-            headless: false,
+    try {
+        const launchOptions = {
+            headless: "new",
             args: [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
                 "--disable-http2",
                 "--disable-features=IsolateOrigins,site-per-process",
+                "--single-process",
+                "--no-zygote",
             ]
-        });
-    } else {
-        return await puppeteer.connect({
-            browserWSEndpoint: `wss://production-sfo.browserless.io?token=${BROWSERLESS_TOKEN}&--disable-http2=true&--disable-features=IsolateOrigins,site-per-process&stealth`,
-        });
+        };
+
+        // Only use custom executable path if explicitly set in production
+        if (PUPPETEER_EXECUTABLE_PATH) {
+            launchOptions.executablePath = PUPPETEER_EXECUTABLE_PATH;
+        }
+
+        return await puppeteer.launch(launchOptions);
+    } catch (error) {
+        console.log("Failed to launch browser:", error.message);
+        console.log(error.stack);
+        return null;
     }
 }
 
@@ -31,7 +39,7 @@ const configBrowserPage = async (browser, url, waitUntilOption, waitSelector, wa
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"Windows"',
     });
-    await page.goto(url, { waitUntil: waitUntilOption, timeout : waitForPageTime });
+    await page.goto(url, { waitUntil: waitUntilOption, timeout: waitForPageTime });
     await page.waitForSelector(waitSelector, { timeout: waitForSelectorTime });
     return page;
 }
