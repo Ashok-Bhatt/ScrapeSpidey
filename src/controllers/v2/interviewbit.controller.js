@@ -2,6 +2,13 @@ import axios from "axios";
 import handleError from "../../utils/errorHandler.js";
 import { getNormalizedInterviewBitHeatmap } from "../../utils/calendar.js"
 
+const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Referer': 'https://www.interviewbit.com/',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'en-US,en;q=0.9',
+};
+
 const getUserInfo = async (req, res) => {
     try {
         const username = req.query.user;
@@ -28,13 +35,6 @@ const getUserSubmissions = async (req, res) => {
     try {
         const username = req.query.user;
         const year = parseInt(req.query.year) || new Date().getFullYear();
-
-        const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Referer': 'https://www.interviewbit.com/',
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'en-US,en;q=0.9',
-        };
 
         const response = await axios.get(`https://www.interviewbit.com/v2/profile/username/daily-user-submissions/${year}/?id=${username}`, { headers });
 

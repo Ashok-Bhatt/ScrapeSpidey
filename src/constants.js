@@ -285,8 +285,31 @@ const LEETCODE_GRAPHQL_QUERIES = {
 }
 
 const API_POINTS_COST = [
+
+    // Code360 Endpoints
     {
-        baseUrl: "gfg/user/profile",
+        baseUrl: "/api/v1/code360/user/profile",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "/api/v1/code360/user/submissions",
+        cost: {
+            base: 1,
+            additionalQueryCost: [
+                {
+                    query: "includeContests=true",
+                    cost: 0.5,
+                },
+            ],
+        },
+    },
+
+    // GFG Endpoints
+    {
+        baseUrl: "/api/v1/gfg/user/profile",
         cost: {
             base: 1,
             additionalQueryCost: [
@@ -298,14 +321,44 @@ const API_POINTS_COST = [
         },
     },
     {
-        baseUrl: "gfg/user/submissions",
+        baseUrl: "/api/v1/gfg/user/submissions",
+        cost: {
+            base: 5,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "/api/v1/gfg/user/problems",
         cost: {
             base: 1,
             additionalQueryCost: [],
         },
     },
     {
-        baseUrl: "codechef/user/profile",
+        baseUrl: "/api/v1/gfg/institution/top-3",
+        cost: {
+            base: 5,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "/api/v1/gfg/institution/info",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "/api/v2/gfg/user/submissions",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+
+    // CodeChef Endpoints
+    {
+        baseUrl: "/api/v1/codechef/user/profile",
         cost: {
             base: 1,
             additionalQueryCost: [
@@ -321,21 +374,32 @@ const API_POINTS_COST = [
         },
     },
     {
-        baseUrl: "codechef/user/submissions",
+        baseUrl: "/api/v1/codechef/user/submissions",
+        cost: {
+            base: 3,
+            additionalQueryCost: [],
+        },
+    },
+
+    // HackerRank Endpoints
+    {
+        baseUrl: "/api/v1/hackerrank/user/profile",
         cost: {
             base: 1,
             additionalQueryCost: [],
         },
     },
     {
-        baseUrl: "hackerrank/user/profile",
+        baseUrl: "/api/v2/hackerrank/user/submissions",
         cost: {
             base: 1,
             additionalQueryCost: [],
         },
     },
+
+    // InterviewBit Endpoints
     {
-        baseUrl: "interviewbit/user/profile",
+        baseUrl: "/api/v1/interviewbit/user/profile",
         cost: {
             base: 1,
             additionalQueryCost: [
@@ -351,28 +415,44 @@ const API_POINTS_COST = [
         },
     },
     {
-        baseUrl: "code360/user/profile",
+        baseUrl: "/api/v1/interviewbit/user/submissions",
         cost: {
-            base: 1,
-            additionalQueryCost: [
-                {
-                    query: "includeContests=true",
-                    cost: 0.5,
-                },
-                {
-                    query: "includeCertificates=true",
-                    cost: 0.5,
-                },
-            ],
+            base: 3,
+            additionalQueryCost: [],
         },
     },
     {
-        baseUrl: "github/user/badges",
+        baseUrl: "/api/v1/interviewbit/user/badges",
         cost: {
             base: 1,
             additionalQueryCost: [],
         },
     },
+    {
+        baseUrl: "/api/v2/interviewbit/user/profile",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+    {
+        baseUrl: "/api/v2/interviewbit/user/submissions",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },  
+
+    // Github Endpoints
+    {
+        baseUrl: "/api/v1/github/user/badges",
+        cost: {
+            base: 1,
+            additionalQueryCost: [],
+        },
+    },
+
+    // LeetCode Endpoints
     {
         baseUrl: "leetcode/user/profile",
         cost: {
@@ -437,63 +517,7 @@ const API_POINTS_COST = [
         },
     },
     {
-        baseUrl: "leetcode/user/favorites",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
-        baseUrl: "leetcode/user/submission-permission",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
-        baseUrl: "leetcode/user/active-badge",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
-        baseUrl: "leetcode/global",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
         baseUrl: "leetcode/contest/histogram",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
-        baseUrl: "leetcode/contest/yearly-medals",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
-        baseUrl: "leetcode/premium/features",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
-        baseUrl: "leetcode/streak",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
-        baseUrl: "leetcode/timestamp",
         cost: {
             base: 1,
             additionalQueryCost: [],
@@ -508,13 +532,6 @@ const API_POINTS_COST = [
     },
     {
         baseUrl: "leetcode/coding-challenge/medal",
-        cost: {
-            base: 1,
-            additionalQueryCost: [],
-        },
-    },
-    {
-        baseUrl: "leetcode/site/announcements",
         cost: {
             base: 1,
             additionalQueryCost: [],
