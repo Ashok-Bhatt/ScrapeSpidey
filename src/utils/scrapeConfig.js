@@ -10,15 +10,11 @@ const configChromeDriver = async () => {
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
-                "--disable-http2",
-                "--disable-features=IsolateOrigins,site-per-process",
-                "--single-process",
-                "--no-zygote",
             ]
         };
 
-        // Only use custom executable path if explicitly set in production
-        if (PUPPETEER_EXECUTABLE_PATH) {
+        // Only use custom executable path in production
+        if (NODE_ENV === 'production' && PUPPETEER_EXECUTABLE_PATH) {
             launchOptions.executablePath = PUPPETEER_EXECUTABLE_PATH;
         }
 

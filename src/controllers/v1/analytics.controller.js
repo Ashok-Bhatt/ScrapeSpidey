@@ -2,6 +2,7 @@ import ApiPoints from "../../models/apiPoints.model.js";
 import apiLogs from "../../models/apiLogs.model.js";
 import { DAILY_API_POINT_LIMIT } from "../../constants.js"
 import Project from "../../models/project.model.js";
+import User from "../../models/user.model.js";
 import handleError from "../../utils/errorHandler.js";
 
 const getDailyApiUsageData = async (req, res) => {
@@ -68,7 +69,123 @@ const getRequestsData = async (req, res) => {
     }
 }
 
+const getAdminAnalytics = async (req, res) => {
+    try {
+        const { startInterval, endInterval } = req.query;
+
+        if (!startInterval || !endInterval) return res.status(400).json({ message: "startInterval and endInterval are required" });
+
+        const startDate = new Date(parseInt(startInterval));
+        const endDate = new Date(parseInt(endInterval));
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return res.status(400).json({ message: "Invalid timestamp format" });
+        if (startDate > endDate) return res.status(400).json({ message: "startInterval must be before endInterval" });
+
+        // 1. Total active users of all time and users created in the given interval
+        const totalUsersAllTime = await User.countDocuments();
+        const usersCreatedInInterval = await User.countDocuments({
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        // 2. Total projects created (all time and in the given interval)
+        const totalProjectsAllTime = await Project.countDocuments();
+        const projectsCreatedInInterval = await Project.countDocuments({
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        // 3. Total requests made in the given interval (successful and unsuccessful count)
+        const requestsInInterval = await apiLogs.find({
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const successfulRequests = requestsInInterval.filter(log => log.statusCode >= 200 && log.statusCode < 300).length;
+        const unsuccessfulRequests = requestsInInterval.filter(log => log.statusCode < 200 || log.statusCode >= 300).length;
+
+        // 4. Endpoints analytics with average response time, count, and success/failure metrics
+        const endpointAnalytics = await apiLogs.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $addFields: {
+                    // Strip query parameters from endpoint
+                    endpointWithoutQuery: {
+                        $arrayElemAt: [{ $split: ["$endpoint", "?"] }, 0]
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$endpointWithoutQuery",
+                    averageResponseTime: { $avg: "$responseTime" },
+                    count: { $sum: 1 },
+                    successfulCount: {
+                        $sum: {
+                            $cond: [
+                                { $and: [{ $gte: ["$statusCode", 200] }, { $lt: ["$statusCode", 300] }] },
+                                1,
+                                0
+                            ]
+                        }
+                    },
+                    unsuccessfulCount: {
+                        $sum: {
+                            $cond: [
+                                { $or: [{ $lt: ["$statusCode", 200] }, { $gte: ["$statusCode", 300] }] },
+                                1,
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                $sort: { count: -1 }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    endpoint: "$_id",
+                    averageResponseTime: { $round: ["$averageResponseTime", 2] },
+                    count: 1,
+                    successfulCount: 1,
+                    unsuccessfulCount: 1
+                }
+            }
+        ]);
+
+        // Prepare response
+        const analyticsData = {
+            users: {
+                totalAllTime: totalUsersAllTime,
+                createdInInterval: usersCreatedInInterval
+            },
+            projects: {
+                totalAllTime: totalProjectsAllTime,
+                createdInInterval: projectsCreatedInInterval
+            },
+            requests: {
+                totalInInterval: requestsInInterval.length,
+                successfulCount: successfulRequests,
+                unsuccessfulCount: unsuccessfulRequests
+            },
+            endpointAnalytics: endpointAnalytics,
+            interval: {
+                start: startDate.toISOString(),
+                end: endDate.toISOString()
+            }
+        };
+
+        return res.status(200).json(analyticsData);
+    } catch (error) {
+        return handleError(res, error, "Error in getAdminAnalytics:");
+    }
+};
+
 export {
     getDailyApiUsageData,
     getRequestsData,
+    getAdminAnalytics,
 }

@@ -1,16 +1,5 @@
-import {
-    fetchUserProfile,
-    fetchLanguageStats,
-    fetchUserCalendar,
-    fetchRecentAcSubmissions,
-    fetchUserBadges,
-    fetchContestRanking,
-    fetchSkillStats,
-    fetchUserProfileQuestionProgressV2,
-    fetchUserSessionProgress,
-    fetchContestRatingHistogram,
-    fetchQuestionOfToday,
-    fetchCodingChallengeMedal,
+import {fetchUserProfile, fetchLanguageStats, fetchUserCalendar, fetchRecentAcSubmissions, fetchUserBadges, fetchContestRanking, fetchSkillStats, fetchUserProfileQuestionProgressV2, fetchUserSessionProgress, fetchContestRatingHistogram, fetchQuestionOfToday, fetchCodingChallengeMedal
+
 } from "../../services/leetcode.service.js";
 import { getNormalizedLeetCodeHeatmap } from "../../utils/calendar.js";
 import handleError from "../../utils/errorHandler.js";
