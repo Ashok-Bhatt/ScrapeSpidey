@@ -27,6 +27,8 @@ const getUserInfo = async (req, res) => {
             userProfileData["contests"] = userContestData;
         }
 
+        delete userProfileData["uuid"];
+
         return res.status(200).json(userProfileData);
 
     } catch (error) {
