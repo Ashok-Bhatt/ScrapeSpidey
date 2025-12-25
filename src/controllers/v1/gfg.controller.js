@@ -183,7 +183,7 @@ const getUserProblemsSolved = async (req, res) => {
         if (!username) return res.status(400).json({ message: "Username not found" });
 
         const reponse = await axios.post("https://practiceapi.geeksforgeeks.org/api/v1/user/problems/submissions/", { handle: username, requestType: "", year: "", month: "" })
-        const data = reponse.data;
+        const data = reponse.data?.result;
 
         return res.status(200).json(data);
     } catch (error) {

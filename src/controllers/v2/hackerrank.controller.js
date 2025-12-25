@@ -1,15 +1,15 @@
 import axios from "axios";
 import handleError from "../../utils/errorHandler.js";
 
+const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Referer': 'https://www.hackerrank.com/',
+};
+
 const getUserInfo = async (req, res) => {
     try {
         const username = req.query.user;
         if (!username) return res.status(400).json({ message: "Username not found" });
-
-        const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Referer': 'https://www.hackerrank.com/',
-        };
 
         const userProfileResponse = await axios.get(`https://www.hackerrank.com/rest/contests/master/hackers/${username}/profile`, {
             headers: headers

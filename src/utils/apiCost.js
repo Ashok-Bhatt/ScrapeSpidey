@@ -7,7 +7,7 @@ const getApiCost = (originalUrl) => {
 
     let totalCost = api.cost.base;
 
-    api.cost.additionalQueryCost.forEach((extra) => {
+    api.cost?.additionalQueryCost?.forEach((extra) => {
         if (originalUrl.includes(extra.query)){
             totalCost = totalCost + extra.cost;
         }
