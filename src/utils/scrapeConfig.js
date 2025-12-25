@@ -3,19 +3,35 @@ import { NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
 
 const configChromeDriver = async () => {
     try {
-        const launchOptions = {
-            headless: "new",
-            args: [
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-            ]
-        };
+        let launchOptions = {};
 
-        // Only use custom executable path in production
-        if (NODE_ENV === 'production' && PUPPETEER_EXECUTABLE_PATH) {
-            launchOptions.executablePath = PUPPETEER_EXECUTABLE_PATH;
+        if (NODE_ENV === "production") {
+            launchOptions = {
+                headless: "new",
+                args: [
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--disable-http2",
+                    "--disable-features=IsolateOrigins,site-per-process",
+                    "--single-process",
+                    "--no-zygote",
+                ]
+            };
+            if (PUPPETEER_EXECUTABLE_PATH) {
+                launchOptions.executablePath = PUPPETEER_EXECUTABLE_PATH;
+            }
+        } else {
+            launchOptions = {
+                headless: "new",
+                args: [
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                ]
+            };
         }
 
         return await puppeteer.launch(launchOptions);
