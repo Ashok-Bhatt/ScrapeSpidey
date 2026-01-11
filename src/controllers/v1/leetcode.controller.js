@@ -64,6 +64,9 @@ const getUserBadges = async (req, res) => {
     try {
         const data = await fetchUserBadges(username);
         if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch user badges." });
+        data["matchedUser"]["badges"].map((badge) => {
+            badge["icon"] = badge["icon"].startsWith("https://assets.leetcode.com") ? badge["icon"] : "https://leetcode.com" + badge["icon"];
+        });
         return res.status(200).json(data);
     } catch (error) {
         return handleError(res, error, "Failed to fetch data");
