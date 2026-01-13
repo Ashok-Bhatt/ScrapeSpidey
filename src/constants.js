@@ -56,6 +56,7 @@ const LEETCODE_GRAPHQL_QUERIES = {
                 topPercentage
                 badge {
                     name
+                    icon
                 }
             }
             userContestRankingHistory(username: $username) {
