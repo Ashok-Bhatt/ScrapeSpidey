@@ -1,8 +1,8 @@
-import { configBrowserPage } from "../../utils/scrapeConfig.js";
-import { getNormalizedCodeChefHeatmap } from "../../utils/calendar.js"
-import handleError from "../../utils/errorHandler.js";
+import { configBrowserPage } from "../../utils/scrapper.util.js";
+import { getNormalizedCodeChefHeatmap } from "../../utils/calendar.util.js"
+import { asyncHandler } from "../../utils/async-handler.util.js";
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const includeContests = req.query.includeContests === "true";
     const includeAchievements = req.query.includeAchievements === "true";
@@ -92,14 +92,12 @@ const getUserInfo = async (req, res) => {
         }, username, includeContests, includeAchievements);
 
         return res.status(200).json(data);
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
         if (page) await page.close();
     }
-};
+});
 
-const getUserSubmissions = async (req, res) => {
+const getUserSubmissions = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const url = `https://www.codechef.com/users/${username}/`;
 
@@ -143,12 +141,10 @@ const getUserSubmissions = async (req, res) => {
 
         return res.status(200).json(getNormalizedCodeChefHeatmap(heatmapData));
 
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
         if (page) await page.close();
     }
-}
+});
 
 export {
     getUserInfo,

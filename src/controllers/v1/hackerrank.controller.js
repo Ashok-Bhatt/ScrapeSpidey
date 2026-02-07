@@ -1,7 +1,7 @@
-import { configBrowserPage } from "../../utils/scrapeConfig.js";
-import handleError from "../../utils/errorHandler.js";
+import { configBrowserPage } from "../../utils/scrapper.util.js";
+import { asyncHandler } from "../../utils/async-handler.util.js";
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const url = `https://www.hackerrank.com/profile/${username}/`;
 
@@ -49,12 +49,10 @@ const getUserInfo = async (req, res) => {
 
         return res.status(200).json(data);
 
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
         if (page) await page.close();
     }
-};
+});
 
 export {
     getUserInfo,

@@ -1,5 +1,5 @@
 import puppeteer from "puppeteer";
-import { NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "../config.js";
+import { NODE_ENV, PUPPETEER_EXECUTABLE_PATH } from "./env.config.js";
 
 let browserInstance = null;
 

@@ -1,9 +1,9 @@
-import { configBrowserPage } from "../../utils/scrapeConfig.js"
-import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.js"
-import handleError from "../../utils/errorHandler.js";
+import { configBrowserPage } from "../../utils/scrapper.util.js"
+import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.util.js"
+import { asyncHandler } from "../../utils/async-handler.util.js";
 import axios from "axios";
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const profilePageUrl = `https://www.geeksforgeeks.org/user/${username}`;
 
@@ -107,14 +107,12 @@ const getUserInfo = async (req, res) => {
         });
 
         return res.status(200).json({ ...userProfileData, ...userCodingData });
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
         if (page) await page.close();
     }
-};
+});
 
-const getUserSubmissions = async (req, res) => {
+const getUserSubmissions = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const year = parseInt(req.query.year) || new Date().getFullYear();
     let heatmapData = {};
@@ -162,28 +160,22 @@ const getUserSubmissions = async (req, res) => {
 
         return res.status(200).json(heatmapData);
 
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
         if (page) await page.close();
     }
-}
+});
 
-const getUserProblemsSolved = async (req, res) => {
-    try {
-        const username = req.query.user;
-        if (!username) return res.status(400).json({ message: "Username not found" });
+const getUserProblemsSolved = asyncHandler(async (req, res) => {
+    const username = req.query.user;
+    if (!username) return res.status(400).json({ message: "Username not found" });
 
-        const reponse = await axios.post("https://practiceapi.geeksforgeeks.org/api/v1/user/problems/submissions/", { handle: username, requestType: "", year: "", month: "" })
-        const data = reponse.data?.result;
+    const reponse = await axios.post("https://practiceapi.geeksforgeeks.org/api/v1/user/problems/submissions/", { handle: username, requestType: "", year: "", month: "" })
+    const data = reponse.data?.result;
 
-        return res.status(200).json(data);
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
-    }
-}
+    return res.status(200).json(data);
+});
 
-const getInstitutionTopThreeRankedUsers = async (req, res) => {
+const getInstitutionTopThreeRankedUsers = asyncHandler(async (req, res) => {
 
     const institution = req.query.institution;
     const url = `https://www.geeksforgeeks.org/colleges/${institution}/`;
@@ -222,14 +214,12 @@ const getInstitutionTopThreeRankedUsers = async (req, res) => {
         });
 
         return res.status(200).json({ institution, users: data });
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch institution top 10 ranked users");
     } finally {
         if (page) await page.close();
     }
-};
+});
 
-const getInstitutionInfo = async (req, res) => {
+const getInstitutionInfo = asyncHandler(async (req, res) => {
 
     const institution = req.query.institution;
     const url = `https://www.geeksforgeeks.org/colleges/${institution}/`;
@@ -266,12 +256,10 @@ const getInstitutionInfo = async (req, res) => {
         });
 
         return res.status(200).json({ institution, data: data });
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch institution info");
     } finally {
         if (page) await page.close();
     }
-};
+});
 
 
 export {

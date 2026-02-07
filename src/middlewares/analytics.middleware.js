@@ -1,29 +1,32 @@
-import apiLogs from "../models/apiLogs.model.js";
-import handleError from "../utils/errorHandler.js";
+import apiLogs from "../models/api-logs.model.js";
+import ApiPoints from "../models/api-points.model.js";
+import Project from "../models/project.model.js";
+import { getApiCost } from "../utils/api-cost.util.js";
+import { asyncHandler } from "../utils/async-handler.util.js";
 
-const getAnalytics = async (req, res, next) => {
-    try {
-        const apiKey = req.apiKey || req.query.apiKey || "";
-        const startTime = Date.now();
+const logApiUsage = asyncHandler(async (req, res, next) => {
+    const start = Date.now();
 
-        res.on("finish", async () => {
-            const duration = Date.now() - startTime;
+    res.on("finish", async () => {
+        const duration = Date.now() - start;
+        const { apiKey } = req.query;
 
+        if (apiKey) {
             await apiLogs.create({
-                apiKey: apiKey,
+                apiKey,
                 endpoint: req.originalUrl,
+                method: req.method,
                 statusCode: res.statusCode,
                 responseTime: duration,
-                endpointCost: req.apiPointsCost || 0,
+                ip: req.ip,
+                pointsUsed: getApiCost(req.originalUrl),
             });
-        })
+        }
+    });
 
-        next();
-    } catch (error) {
-        return handleError(res, error, "Error in analytics middleware:");
-    }
-}
+    next();
+});
 
 export {
-    getAnalytics,
+    logApiUsage,
 }
