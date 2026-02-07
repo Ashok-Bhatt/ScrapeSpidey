@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { getUserInfo } from "../../controllers/v2/hackerrank.controller.js";
-import { verifyApiKey } from "../../middlewares/apikey.middleware.js"
-import { checkLimit } from "../../middlewares/rateLimiter.middleware.js";
-import { getAnalytics } from "../../middlewares/analytics.middleware.js";
+import { verifyApiKey } from "../../middlewares/api-key.middleware.js"
+import { rateLimiter } from "../../middlewares/rate-limiter.middleware.js";
+import { logApiUsage } from "../../middlewares/analytics.middleware.js";
 
 const router = Router();
 
-router.route("/user/profile").get(verifyApiKey, checkLimit, getAnalytics, getUserInfo);
+router.route("/user/profile").get(verifyApiKey, rateLimiter, logApiUsage, getUserInfo);
 
 export {
     router,

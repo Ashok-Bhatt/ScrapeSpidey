@@ -1,8 +1,8 @@
-import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js";
-import { getNormalizedCodeChefHeatmap } from "../../utils/calendar.js"
-import handleError from "../../utils/errorHandler.js";
+import { configBrowserPage } from "../../utils/scrapper.util.js";
+import { getNormalizedCodeChefHeatmap } from "../../utils/calendar.util.js"
+import { asyncHandler } from "../../utils/async-handler.util.js";
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const includeContests = req.query.includeContests === "true";
     const includeAchievements = req.query.includeAchievements === "true";
@@ -10,14 +10,10 @@ const getUserInfo = async (req, res) => {
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'networkidle0', '.user-details-container.plr10', 30000, 30000);
+        page = await configBrowserPage(url, 'networkidle0', '.user-details-container.plr10', 30000, 30000);
 
         const data = await page.evaluate((username, includeContests, includeAchievements) => {
 
@@ -96,28 +92,22 @@ const getUserInfo = async (req, res) => {
         }, username, includeContests, includeAchievements);
 
         return res.status(200).json(data);
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
-};
+});
 
-const getUserSubmissions = async (req, res) => {
+const getUserSubmissions = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const url = `https://www.codechef.com/users/${username}/`;
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
     let heatmapData = {};
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.user-details-container.plr10', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.user-details-container.plr10', 30000, 30000);
 
         const heatmapSelectSelector = "#heatmap-period-selector";
 
@@ -151,12 +141,10 @@ const getUserSubmissions = async (req, res) => {
 
         return res.status(200).json(getNormalizedCodeChefHeatmap(heatmapData));
 
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
-}
+});
 
 export {
     getUserInfo,

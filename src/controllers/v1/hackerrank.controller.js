@@ -1,20 +1,16 @@
-import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js"
-import handleError from "../../utils/errorHandler.js";
+import { configBrowserPage } from "../../utils/scrapper.util.js";
+import { asyncHandler } from "../../utils/async-handler.util.js";
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const url = `https://www.hackerrank.com/profile/${username}/`;
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.hr-heading-02.profile-title.ellipsis', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.hr-heading-02.profile-title.ellipsis', 30000, 30000);
 
         const data = await page.evaluate((username) => {
 
@@ -53,12 +49,10 @@ const getUserInfo = async (req, res) => {
 
         return res.status(200).json(data);
 
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
-};
+});
 
 export {
     getUserInfo,

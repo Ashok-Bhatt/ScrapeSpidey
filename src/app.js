@@ -15,8 +15,7 @@ import { router as projectRouter } from "./routes/v1/project.route.js";
 import { router as hackerrankRouter2 } from "./routes/v2/hackerrank.route.js";
 import { router as interviewbitRouter2 } from "./routes/v2/interviewbit.route.js";
 import { router as gfgRouter2 } from "./routes/v2/gfg.route.js";
-
-import { CLIENT_URL } from "./config.js";
+import { CLIENT_URL } from "./config/env.config.js";
 
 const app = express();
 
@@ -54,5 +53,19 @@ app.use("/api/v1/project", cors(restrictedCorsOptions), projectRouter);
 app.get("/", (req, res) => {
   res.send("Welcome to scrape spidey! Scrape data from your favorite coding profiles.")
 })
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+
+  console.error(`[Error] ${message}`);
+  if (err.stack) console.error(err.stack);
+
+  res.status(statusCode).json({
+    success: false,
+    message,
+  });
+});
 
 export { app };
