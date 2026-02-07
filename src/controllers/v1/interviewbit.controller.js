@@ -1,5 +1,5 @@
-import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js"
-import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.js";
+import { configBrowserPage } from "../../utils/scrapeConfig.js"
+import { getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.js";
 import handleError from "../../utils/errorHandler.js";
 
 const getUserInfo = async (req, res) => {
@@ -10,14 +10,10 @@ const getUserInfo = async (req, res) => {
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.recharts-surface', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.recharts-surface', 30000, 30000);
 
         const data = await page.evaluate((username, includeSubmissionStats, includeBadges) => {
 
@@ -85,7 +81,7 @@ const getUserInfo = async (req, res) => {
     } catch (error) {
         return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
 };
 
@@ -98,7 +94,6 @@ const getUserSubmissions = async (req, res) => {
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     const yearButtonSelector = ".profile-activity-heatmap__year-select-selected";
@@ -107,10 +102,7 @@ const getUserSubmissions = async (req, res) => {
     const tooltipSelector = '.profile-activity-heatmap__tooltip';
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.profile-activity-heatmap__months', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.profile-activity-heatmap__months', 30000, 30000);
 
         await page.click(yearButtonSelector);
         await new Promise(resolve => setTimeout(resolve, 250));
@@ -148,7 +140,7 @@ const getUserSubmissions = async (req, res) => {
     } catch (error) {
         return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
 }
 
@@ -158,14 +150,10 @@ const getUserBadges = async (req, res) => {
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.recharts-surface', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.recharts-surface', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
@@ -185,7 +173,7 @@ const getUserBadges = async (req, res) => {
     } catch (error) {
         return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
 }
 

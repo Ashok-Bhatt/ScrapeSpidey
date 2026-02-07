@@ -1,4 +1,4 @@
-import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js"
+import { configBrowserPage } from "../../utils/scrapeConfig.js"
 import handleError from "../../utils/errorHandler.js";
 
 const getGithubBadges = async (req, res) => {
@@ -7,14 +7,10 @@ const getGithubBadges = async (req, res) => {
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'networkidle2', '.achievement-card', 30000, 30000);
+        page = await configBrowserPage(url, 'networkidle2', '.achievement-card', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
@@ -43,7 +39,7 @@ const getGithubBadges = async (req, res) => {
     } catch (error) {
         return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
 }
 

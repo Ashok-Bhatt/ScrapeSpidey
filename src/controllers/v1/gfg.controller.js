@@ -1,4 +1,4 @@
-import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js"
+import { configBrowserPage } from "../../utils/scrapeConfig.js"
 import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.js"
 import handleError from "../../utils/errorHandler.js";
 import axios from "axios";
@@ -9,15 +9,11 @@ const getUserInfo = async (req, res) => {
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
         // Going to Profile Tab
-        page = await configBrowserPage(browser, profilePageUrl, 'domcontentloaded', '.NewProfile_container__licgi', 30000, 30000);
+        page = await configBrowserPage(profilePageUrl, 'domcontentloaded', '.NewProfile_container__licgi', 30000, 30000);
 
         const userProfileData = await page.evaluate((username) => {
 
@@ -58,7 +54,7 @@ const getUserInfo = async (req, res) => {
 
 
         // Coding Score Tab
-        page = await configBrowserPage(browser, `${profilePageUrl}?tab=activity`, 'networkidle0', '.ProblemNavbar_head_nav__OqbEt', 30000, 30000);
+        page = await configBrowserPage(`${profilePageUrl}?tab=activity`, 'networkidle0', '.ProblemNavbar_head_nav__OqbEt', 30000, 30000);
 
         const userCodingData = await page.evaluate(() => {
 
@@ -114,7 +110,7 @@ const getUserInfo = async (req, res) => {
     } catch (error) {
         return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
 };
 
@@ -127,7 +123,6 @@ const getUserSubmissions = async (req, res) => {
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     const yearButtonSelector = ".HeatMapHeader_year_button___SZVP";
@@ -136,10 +131,7 @@ const getUserSubmissions = async (req, res) => {
     const tooltipSelector = '#ch-tooltip-body';
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.HeatAndLineChart_heatAndLineChart__5JbBm', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.HeatAndLineChart_heatAndLineChart__5JbBm', 30000, 30000);
 
         await page.click(yearButtonSelector);
         await page.waitForSelector(dropdownItemSelector, { visible: true });
@@ -173,7 +165,7 @@ const getUserSubmissions = async (req, res) => {
     } catch (error) {
         return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
 }
 
@@ -198,14 +190,10 @@ const getInstitutionTopThreeRankedUsers = async (req, res) => {
 
     if (!institution) return res.status(400).json({ message: "Institution name not provided" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.BreadCrumbs_head_singleItem__5u7Ke.BreadCrumbs_head_activeItem__ePY__', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.BreadCrumbs_head_singleItem__5u7Ke.BreadCrumbs_head_activeItem__ePY__', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
@@ -237,7 +225,7 @@ const getInstitutionTopThreeRankedUsers = async (req, res) => {
     } catch (error) {
         return handleError(res, error, "Failed to fetch institution top 10 ranked users");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
 };
 
@@ -248,14 +236,10 @@ const getInstitutionInfo = async (req, res) => {
 
     if (!institution) return res.status(400).json({ message: "Institution name not provided" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'networkidle2', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
+        page = await configBrowserPage(url, 'networkidle2', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
@@ -285,7 +269,7 @@ const getInstitutionInfo = async (req, res) => {
     } catch (error) {
         return handleError(res, error, "Failed to fetch institution info");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
 };
 

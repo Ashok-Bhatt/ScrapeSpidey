@@ -6,11 +6,15 @@ const verifyApiKey = async (req, res, next) => {
         const apiKey = req.query.apiKey || "";
         const projectId = req.query.projectId || "";
 
+
+
         let project = null;
         if (apiKey) project = await Project.findOne({ apiKey });
         else if (projectId) project = await Project.findById(projectId);
 
-        if (!project) return res.status(401).json({ message: "Invalid API Key or Project Id!" });
+        if (!project) {
+            return res.status(401).json({ message: "Invalid API Key or Project Id!" });
+        }
 
         req.apiKey = project.apiKey;
         req.apiPointsDailyLimit = project.apiPointsDailyLimit;
