@@ -1,20 +1,16 @@
-import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js"
-import handleError from "../../utils/errorHandler.js";
+import { configBrowserPage } from "../../utils/scrapper.util.js"
+import { asyncHandler } from "../../utils/async-handler.util.js";
 
-const getGithubBadges = async (req, res) => {
+const getGithubBadges = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const url = `https://github.com//${username}?tab=achievements`;
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'networkidle2', '.achievement-card', 30000, 30000);
+        page = await configBrowserPage(url, 'networkidle2', '.achievement-card', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
@@ -40,12 +36,10 @@ const getGithubBadges = async (req, res) => {
         });
 
         return res.status(200).json(data);
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
-}
+});
 
 export {
     getGithubBadges,

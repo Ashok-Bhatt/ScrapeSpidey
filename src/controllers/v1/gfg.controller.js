@@ -1,23 +1,19 @@
-import { configChromeDriver, configBrowserPage } from "../../utils/scrapeConfig.js"
-import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.js"
-import handleError from "../../utils/errorHandler.js";
+import { configBrowserPage } from "../../utils/scrapper.util.js"
+import { isLeapYear, getDateDetailsFromDayOfYear, scrapeGfgTooltipData } from "../../utils/calendar.util.js"
+import { asyncHandler } from "../../utils/async-handler.util.js";
 import axios from "axios";
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const profilePageUrl = `https://www.geeksforgeeks.org/user/${username}`;
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
         // Going to Profile Tab
-        page = await configBrowserPage(browser, profilePageUrl, 'domcontentloaded', '.NewProfile_container__licgi', 30000, 30000);
+        page = await configBrowserPage(profilePageUrl, 'domcontentloaded', '.NewProfile_container__licgi', 30000, 30000);
 
         const userProfileData = await page.evaluate((username) => {
 
@@ -33,7 +29,6 @@ const getUserInfo = async (req, res) => {
 
             const avatar = avatarElement?.getAttribute("src") || "NA";
 
-            const avatarUrl = avatar !== "NA" ? "https://www.geeksforgeeks.org/" + avatar : "NA";
             const guestName = getText(guestNameElement);
             const userTagline = getText(userTaglineElement);
             const followersCount = getText(followersCountElement);
@@ -43,7 +38,7 @@ const getUserInfo = async (req, res) => {
 
             const data = {
                 username: username,
-                avatar: avatarUrl,
+                avatar: avatar,
                 guestName: guestName,
                 userTagline: userTagline,
                 followersCount: followersCount == "NA" ? 0 : parseInt(followersCount),
@@ -58,7 +53,7 @@ const getUserInfo = async (req, res) => {
 
 
         // Coding Score Tab
-        page = await configBrowserPage(browser, `${profilePageUrl}?tab=activity`, 'networkidle0', '.ProblemNavbar_head_nav__OqbEt', 30000, 30000);
+        page = await configBrowserPage(`${profilePageUrl}?tab=activity`, 'networkidle0', '.ProblemNavbar_head_nav__OqbEt', 30000, 30000);
 
         const userCodingData = await page.evaluate(() => {
 
@@ -111,14 +106,12 @@ const getUserInfo = async (req, res) => {
         });
 
         return res.status(200).json({ ...userProfileData, ...userCodingData });
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
-};
+});
 
-const getUserSubmissions = async (req, res) => {
+const getUserSubmissions = asyncHandler(async (req, res) => {
     const username = req.query.user;
     const year = parseInt(req.query.year) || new Date().getFullYear();
     let heatmapData = {};
@@ -127,7 +120,6 @@ const getUserSubmissions = async (req, res) => {
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 
-    let browser;
     let page;
 
     const yearButtonSelector = ".HeatMapHeader_year_button___SZVP";
@@ -136,10 +128,7 @@ const getUserSubmissions = async (req, res) => {
     const tooltipSelector = '#ch-tooltip-body';
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.HeatAndLineChart_heatAndLineChart__5JbBm', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.HeatAndLineChart_heatAndLineChart__5JbBm', 30000, 30000);
 
         await page.click(yearButtonSelector);
         await page.waitForSelector(dropdownItemSelector, { visible: true });
@@ -170,42 +159,32 @@ const getUserSubmissions = async (req, res) => {
 
         return res.status(200).json(heatmapData);
 
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
-}
+});
 
-const getUserProblemsSolved = async (req, res) => {
-    try {
-        const username = req.query.user;
-        if (!username) return res.status(400).json({ message: "Username not found" });
+const getUserProblemsSolved = asyncHandler(async (req, res) => {
+    const username = req.query.user;
+    if (!username) return res.status(400).json({ message: "Username not found" });
 
-        const reponse = await axios.post("https://practiceapi.geeksforgeeks.org/api/v1/user/problems/submissions/", { handle: username, requestType: "", year: "", month: "" })
-        const data = reponse.data?.result;
+    const reponse = await axios.post("https://practiceapi.geeksforgeeks.org/api/v1/user/problems/submissions/", { handle: username, requestType: "", year: "", month: "" })
+    const data = reponse.data?.result;
 
-        return res.status(200).json(data);
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch data");
-    }
-}
+    return res.status(200).json(data);
+});
 
-const getInstitutionTopThreeRankedUsers = async (req, res) => {
+const getInstitutionTopThreeRankedUsers = asyncHandler(async (req, res) => {
 
     const institution = req.query.institution;
     const url = `https://www.geeksforgeeks.org/colleges/${institution}/`;
 
     if (!institution) return res.status(400).json({ message: "Institution name not provided" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'domcontentloaded', '.BreadCrumbs_head_singleItem__5u7Ke.BreadCrumbs_head_activeItem__ePY__', 30000, 30000);
+        page = await configBrowserPage(url, 'domcontentloaded', '.BreadCrumbs_head_singleItem__5u7Ke.BreadCrumbs_head_activeItem__ePY__', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
@@ -234,28 +213,22 @@ const getInstitutionTopThreeRankedUsers = async (req, res) => {
         });
 
         return res.status(200).json({ institution, users: data });
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch institution top 10 ranked users");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
-};
+});
 
-const getInstitutionInfo = async (req, res) => {
+const getInstitutionInfo = asyncHandler(async (req, res) => {
 
     const institution = req.query.institution;
     const url = `https://www.geeksforgeeks.org/colleges/${institution}/`;
 
     if (!institution) return res.status(400).json({ message: "Institution name not provided" });
 
-    let browser;
     let page;
 
     try {
-        browser = await configChromeDriver();
-        if (!browser) return res.status(500).json({ message: "Failed to setup browser" });
-
-        page = await configBrowserPage(browser, url, 'networkidle2', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
+        page = await configBrowserPage(url, 'networkidle2', '.ColgOrgIntroCard_tabHead_details_name__zYvs8', 30000, 30000);
 
         const data = await page.evaluate(() => {
 
@@ -282,12 +255,10 @@ const getInstitutionInfo = async (req, res) => {
         });
 
         return res.status(200).json({ institution, data: data });
-    } catch (error) {
-        return handleError(res, error, "Failed to fetch institution info");
     } finally {
-        if (browser) await browser.close();
+        if (page) await page.close();
     }
-};
+});
 
 
 export {
