@@ -33,7 +33,6 @@ const getUserInfo = async (req, res) => {
 
             const avatar = avatarElement?.getAttribute("src") || "NA";
 
-            const avatarUrl = avatar !== "NA" ? "https://www.geeksforgeeks.org/" + avatar : "NA";
             const guestName = getText(guestNameElement);
             const userTagline = getText(userTaglineElement);
             const followersCount = getText(followersCountElement);
@@ -43,7 +42,7 @@ const getUserInfo = async (req, res) => {
 
             const data = {
                 username: username,
-                avatar: avatarUrl,
+                avatar: avatar,
                 guestName: guestName,
                 userTagline: userTagline,
                 followersCount: followersCount == "NA" ? 0 : parseInt(followersCount),
