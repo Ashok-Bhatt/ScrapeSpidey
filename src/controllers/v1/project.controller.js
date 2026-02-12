@@ -69,7 +69,7 @@ const deleteProject = asyncHandler(async (req, res) => {
 const changeDailyApiLimit = asyncHandler(async (req, res) => {
     const { projectId, newApiPointsDailyLimit } = req.body;
 
-    if (!projectId) return res.status(400).json({ message: "User Id not provided!" });
+    if (!projectId) return res.status(400).json({ message: "Project Id not provided!" });
     if (!newApiPointsDailyLimit) return res.status(400).json({ message: "API Limit not provided!" });
 
     const project = await Project.findById(new mongoose.Types.ObjectId(projectId));

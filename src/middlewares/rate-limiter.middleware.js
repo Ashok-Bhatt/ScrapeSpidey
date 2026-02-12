@@ -20,11 +20,18 @@ const rateLimiter = asyncHandler(async (req, res, next) => {
         apiPoint = await ApiPoints.create({
             apiKey,
             date,
-            remainingApiPoints: (project.apiPointsDailyLimit || DAILY_API_POINT_LIMIT) - apiCost,
+            apiPointsUsed: apiCost,
             requestsMade: 1,
         })
 
-        if (!apiPointsModel) return res.status(400).json({ message: "Something went wrong!" });
+        if (!apiPoint) return res.status(400).json({ message: "Something went wrong!" });
+        next();
+    } else if (apiPoint.apiPointsUsed >= project.apiPointsDailyLimit) {
+        return res.status(429).json({ message: "Rate limit exceeded" });
+    } else {
+        apiPoint.apiPointsUsed += apiCost;
+        apiPoint.requestsMade += 1;
+        await apiPoint.save();
         next();
     }
 });

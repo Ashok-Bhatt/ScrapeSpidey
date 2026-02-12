@@ -30,7 +30,7 @@ const getDailyApiUsageData = asyncHandler(async (req, res) => {
             const newDateData = await ApiPoints.create({
                 apiKey,
                 date,
-                remainingApiPoints: project.apiPointsDailyLimit || DAILY_API_POINT_LIMIT,
+                apiPointsUsed: 0,
                 requestsMade: 0,
             })
             dailyUsageData.push(newDateData);
