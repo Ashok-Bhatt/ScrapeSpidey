@@ -51,6 +51,8 @@ const getUserInfo = asyncHandler(async (req, res) => {
 
         }, username);
 
+        // Closing the current page before opening the new one
+        await page.close();
 
         // Coding Score Tab
         page = await configBrowserPage(`${profilePageUrl}?tab=activity`, 'networkidle0', '.ProblemNavbar_head_nav__OqbEt', 30000, 30000);

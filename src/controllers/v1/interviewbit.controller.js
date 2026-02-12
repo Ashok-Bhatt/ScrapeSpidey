@@ -113,7 +113,6 @@ const getUserSubmissions = asyncHandler(async (req, res) => {
 
         const yearIndex = heatmapOptionValues.indexOf(year.toString());
         if (yearIndex === -1) return res.status(404).json({ message: `Year ${year} not found in dropdown options.` });
-        console.log(yearIndex, typeof yearIndex);
 
         const specificYearSelector = `.profile-activity-heatmap__year-select-item:nth-child(${yearIndex + 1})`;
 

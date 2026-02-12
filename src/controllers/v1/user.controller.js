@@ -77,7 +77,7 @@ const changePassword = asyncHandler(async (req, res) => {
     if (!newPassword) return res.status(400).json({ message: "All fields are required" });
     if (!isValidPassword(newPassword)) return res.status(400).json({ message: "Invalid new password format" });
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const salt = await bcrypt.genSalt(10);
@@ -93,7 +93,7 @@ const updateUserInfo = asyncHandler(async (req, res) => {
 
     if (!name && !bio) return res.status(400).json({ message: "At least one field is required to update" });
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     if (name) user.name = name;
@@ -158,7 +158,7 @@ const uploadProfilePic = asyncHandler(async (req, res) => {
     user.profilePic = newProfilePicUrl;
     await user.save();
 
-    if (oldProfilePicUrl) await destroyFile(oldProfilePicUrl, "ScrapeSpidey");
+    if (oldProfilePicUrl) await destroyFile(oldProfilePicUrl);
 
     res.status(200).json({
         message: "Profile picture updated successfully",
@@ -170,7 +170,7 @@ const updateUserApiKey = asyncHandler(async (req, res) => {
     const { apiKey } = req.body;
     const user = req.user;
 
-    if (!apiKey && apiKey !== "") return res.status(400).json({ message: "API Key is required" });
+    if (apiKey === undefined) return res.status(400).json({ message: "API Key is required" });
 
     user.apiKey = apiKey;
     await user.save();

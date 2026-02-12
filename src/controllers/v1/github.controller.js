@@ -3,7 +3,7 @@ import { asyncHandler } from "../../utils/async-handler.util.js";
 
 const getGithubBadges = asyncHandler(async (req, res) => {
     const username = req.query.user;
-    const url = `https://github.com//${username}?tab=achievements`;
+    const url = `https://github.com/${username}?tab=achievements`;
 
     if (!username) return res.status(400).json({ message: "Username not found" });
 

@@ -1,6 +1,4 @@
 import apiLogs from "../models/api-logs.model.js";
-import ApiPoints from "../models/api-points.model.js";
-import Project from "../models/project.model.js";
 import { getApiCost } from "../utils/api-cost.util.js";
 import { asyncHandler } from "../utils/async-handler.util.js";
 
@@ -15,11 +13,9 @@ const logApiUsage = asyncHandler(async (req, res, next) => {
             await apiLogs.create({
                 apiKey,
                 endpoint: req.originalUrl,
-                method: req.method,
                 statusCode: res.statusCode,
                 responseTime: duration,
-                ip: req.ip,
-                pointsUsed: getApiCost(req.originalUrl),
+                endpointCost: getApiCost(req.originalUrl),
             });
         }
     });
