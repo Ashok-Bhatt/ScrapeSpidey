@@ -1,4 +1,4 @@
-import { getUserInfo, getUserSubmissions, getInstitutionInfo, getInstitutionTopThreeRankedUsers, getUserProblemsSolved } from "../../controllers/v1/gfg.controller.js";
+import { getUserInfo, getUserSubmissions, getInstitutionInfo, getInstitutionTopThreeRankedUsers, getUserProblemsSolved, getQuestionOfToday, getMonthlyPotds } from "../../controllers/v1/gfg.controller.js";
 import { Router } from "express";
 import { verifyApiKey } from "../../middlewares/api-key.middleware.js"
 import { rateLimiter } from "../../middlewares/rate-limiter.middleware.js";
@@ -11,5 +11,7 @@ router.route("/user/problems").get(verifyApiKey, rateLimiter, logApiUsage, getUs
 router.route("/user/submissions").get(verifyApiKey, rateLimiter, logApiUsage, getUserSubmissions);
 router.route("/institution/top-3").get(verifyApiKey, rateLimiter, logApiUsage, getInstitutionTopThreeRankedUsers);
 // router.route("/institution/info").get(verifyApiKey, rateLimiter, logApiUsage, getInstitutionInfo);
+router.route("/question/today").get(verifyApiKey, rateLimiter, logApiUsage, getQuestionOfToday);
+router.route("/potd/monthly").get(verifyApiKey, rateLimiter, logApiUsage, getMonthlyPotds);
 
 export { router };

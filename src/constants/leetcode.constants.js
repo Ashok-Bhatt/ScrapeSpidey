@@ -280,8 +280,50 @@ const LEETCODE_GRAPHQL_QUERIES = {
                 }
             }
         }
+    `,
+    upcomingContests: `
+        query upcomingContests {
+            upcomingContests {
+                title
+                titleSlug
+                startTime
+                duration
+                originStartTime
+                isVirtual
+            }
+        }
+    `,
+    globalTopRankers: `
+        query globalRankingPaginated($page: Int) {
+            globalRanking(page: $page) {
+                totalUsers
+                userPerPage
+                totalPages
+                rankingNodes {
+                    ranking
+                    currentRating
+                    currentGlobalRanking
+                    dataRegion
+                    user {
+                        username
+                        nameColor
+                        activeBadge {
+                            displayName
+                            icon
+                        }
+                        profile {
+                            userSlug
+                            userAvatar
+                            countryCode
+                            countryName
+                            realName
+                        }
+                    }
+                }
+            }
+        }
     `
-}
+};
 
 export {
     LEETCODE_GRAPHQL_ENDPOINT,

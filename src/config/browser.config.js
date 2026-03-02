@@ -28,7 +28,7 @@ const initBrowser = async () => {
             }
         } else {
             launchOptions = {
-                headless: "new",
+                headless: false,
                 args: [
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
