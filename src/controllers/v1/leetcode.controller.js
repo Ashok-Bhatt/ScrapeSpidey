@@ -136,6 +136,26 @@ const getCodingChallengeMedal = asyncHandler(async (req, res) => {
     return res.status(200).json(data);
 });
 
+const getUpcomingContests = asyncHandler(async (req, res) => {
+    const data = await makeApiCall(LEETCODE_GRAPHQL_QUERIES.upcomingContests, {});
+    if (!data || !data.upcomingContests) return res.status(500).json({ message: "Something went wrong! Could not fetch upcoming contests." });
+    return res.status(200).json(data.upcomingContests);
+});
+
+const getGlobalTopRankers = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const data = await makeApiCall(LEETCODE_GRAPHQL_QUERIES.globalTopRankers, { page });
+    if (!data || !data.globalRanking) return res.status(500).json({ message: "Something went wrong! Could not fetch global top rankers." });
+    data.globalRanking.rankingNodes = data.globalRanking?.rankingNodes?.map((user) => {
+        return {
+            ...user,
+            currentRating: parseFloat(user.currentRating),
+            ranking: JSON.parse(user.ranking),
+        }
+    })
+    return res.status(200).json(data.globalRanking);
+});
+
 export {
     getUserProfile,
     getLanguageStats,
@@ -149,4 +169,6 @@ export {
     getContestRatingHistogram,
     getQuestionOfToday,
     getCodingChallengeMedal,
+    getUpcomingContests,
+    getGlobalTopRankers,
 }

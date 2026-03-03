@@ -1,4 +1,4 @@
-import { getUserProfile, getLanguageStats, getUserCalendar, getRecentAcSubmissions, getUserBadges, getContestRanking, getSkillStats, getUserProfileQuestionProgressV2, getUserSessionProgress, getContestRatingHistogram, getQuestionOfToday, getCodingChallengeMedal } from "../../controllers/v1/leetcode.controller.js";
+import { getUserProfile, getLanguageStats, getUserCalendar, getRecentAcSubmissions, getUserBadges, getContestRanking, getSkillStats, getUserProfileQuestionProgressV2, getUserSessionProgress, getContestRatingHistogram, getQuestionOfToday, getCodingChallengeMedal, getUpcomingContests, getGlobalTopRankers } from "../../controllers/v1/leetcode.controller.js";
 import { Router } from "express";
 import { verifyApiKey } from "../../middlewares/api-key.middleware.js"
 import { rateLimiter } from "../../middlewares/rate-limiter.middleware.js";
@@ -21,5 +21,7 @@ router.route("/user/session-progress").get(verifyApiKey, rateLimiter, logApiUsag
 router.route("/contest/histogram").get(verifyApiKey, rateLimiter, logApiUsage, getContestRatingHistogram);
 router.route("/question/today").get(verifyApiKey, rateLimiter, logApiUsage, getQuestionOfToday);
 router.route("/coding-challenge/medal").get(verifyApiKey, rateLimiter, logApiUsage, getCodingChallengeMedal);
+router.route("/contest/upcoming").get(verifyApiKey, rateLimiter, logApiUsage, getUpcomingContests);
+router.route("/contest/ranking/global").get(verifyApiKey, rateLimiter, logApiUsage, getGlobalTopRankers);
 
 export { router };

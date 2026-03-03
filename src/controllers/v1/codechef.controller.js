@@ -15,7 +15,7 @@ const getUserInfo = asyncHandler(async (req, res) => {
     try {
         page = await configBrowserPage(url, 'networkidle0', '.user-details-container.plr10', 30000, 30000);
 
-        const data = await page.evaluate((username, includeContests, includeAchievements) => {
+        const data = await page.evaluate(async (username, includeContests, includeAchievements) => {
 
             const getText = (element) => element?.textContent || "NA";
 
@@ -41,15 +41,59 @@ const getUserInfo = asyncHandler(async (req, res) => {
                 const RankElements = document.querySelectorAll(".rating-ranks li a");
 
                 const currentRating = getText(currentRatingElement);
-                const highestRating = getText(highestRatingElement);
+                const highestRating = highestRatingElement ? getText(highestRatingElement).split(" ").at(-1).slice(0, -1) : "NA";
 
                 const contestData = {
                     currentRating: currentRating == "NA" ? "NA" : parseInt(currentRating),
-                    highestRating: highestRating == "NA" ? "NA" : parseInt(getText(highestRatingElement).split(" ").at(-1).slice(0, -1)),
+                    highestRating: highestRating == "NA" ? "NA" : parseInt(highestRating),
                     contestDiv: contestDivElement.length >= 1 ? parseInt(getText(contestDivElement[1]).at(-2)) : "NA",
                     contestStars: contestStarsElement.length,
                     globalRank: RankElements.length ? parseInt(getText(RankElements[0])) : "NA",
                     countryRank: RankElements.length > 1 ? parseInt(getText(RankElements[1])) : "NA",
+                }
+
+                const markers = document.querySelectorAll(".highcharts-markers");
+
+                if (markers.length >= 2) {
+                    const secondMarkerContainer = markers[1];
+                    const paths = Array.from(secondMarkerContainer.querySelectorAll("path"));
+                    const history = [];
+
+                    for (const path of paths) {
+                        // Highcharts often needs mouseover/mousemove to trigger the tooltip/active point state
+                        // Using getBoundingClientRect() for viewport-relative coordinates
+                        const rect = path.getBoundingClientRect();
+                        const x = rect.left + rect.width / 2;
+                        const y = rect.top + rect.height / 2;
+
+                        path.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, clientX: x, clientY: y }));
+                        path.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: x, clientY: y }));
+                        path.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: x, clientY: y }));
+                        path.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: x, clientY: y }));
+                        path.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: x, clientY: y }));
+                        path.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: x, clientY: y }));
+
+                        // Wait for the tooltip/rank-stats to appear/update
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+
+                        const rankStats = document.querySelector(".rank-stats");
+                        if (rankStats) {
+                            const rating = rankStats.querySelector(".rating")?.childNodes[0]?.textContent?.trim() || "NA";
+                            const ratingDifference = rankStats.querySelector(".rating .rating-difference")?.textContent?.trim() || "NA";
+                            const contestName = rankStats.querySelector(".rating-box-all .contest-name")?.textContent?.trim() || "NA";
+                            const contestTime = rankStats.querySelector(".rating-box-all .time")?.textContent?.trim() || "NA";
+                            const globalRank = rankStats.querySelector(".rating-box-all .global-rank")?.textContent?.trim() || "NA";
+
+                            history.push({
+                                rating,
+                                ratingDifference,
+                                contestName,
+                                contestTime,
+                                globalRank
+                            });
+                        }
+                    }
+                    contestData.history = history;
                 }
 
                 codechefData.contestData = contestData;

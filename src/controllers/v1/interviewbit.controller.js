@@ -157,7 +157,7 @@ const getUserBadges = asyncHandler(async (req, res) => {
             const badges = Array.from(document.querySelectorAll(".profile-badge-progress-tile")).map((badge) => ({
                 title: getText(badge.querySelector(".profile-badge-progress-tile__title")),
                 date: getText(badge.querySelector(".profile-badge-progress-tile__sub-title")),
-                image: badge.querySelector(".profile-badge-progress-tile__badge-img")?.getAttribute("style"),
+                image: badge.querySelector(".profile-badge-progress-tile__badge-img")?.getAttribute("style")?.split('"')[1]?.replace('\\', ''),
             }));
 
             return badges;

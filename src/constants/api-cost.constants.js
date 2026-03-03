@@ -219,6 +219,30 @@ const API_POINTS_COST = [
             base: 1,
         },
     },
+    {
+        baseUrl: "leetcode/contest/upcoming",
+        cost: {
+            base: 1,
+        },
+    },
+    {
+        baseUrl: "leetcode/contest/ranking/global",
+        cost: {
+            base: 1,
+        },
+    },
+    {
+        baseUrl: "gfg/question/today",
+        cost: {
+            base: 1,
+        },
+    },
+    {
+        baseUrl: "gfg/potd/monthly",
+        cost: {
+            base: 1,
+        },
+    },
 ];
 
 export {

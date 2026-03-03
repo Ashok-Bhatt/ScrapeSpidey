@@ -262,6 +262,22 @@ const getInstitutionInfo = asyncHandler(async (req, res) => {
     }
 });
 
+const getQuestionOfToday = asyncHandler(async (req, res) => {
+    const response = await axios.get("https://practiceapi.geeksforgeeks.org/api/vr/problems-of-day/problem/today/");
+    const data = response.data;
+    if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch GFG question of today." });
+    return res.status(200).json(data);
+});
+
+const getMonthlyPotds = asyncHandler(async (req, res) => {
+    const year = req.query.year || new Date().getFullYear();
+    const month = req.query.month || new Date().getMonth() + 1;
+    const response = await axios.get(`https://practiceapi.geeksforgeeks.org/api/vr/problems-of-day/problems/previous/?year=${year}&month=${month}`);
+    const data = response.data;
+    if (!data) return res.status(500).json({ message: "Something went wrong! Could not fetch GFG monthly POTDs." });
+    return res.status(200).json(data);
+});
+
 
 export {
     getUserInfo,
@@ -269,4 +285,6 @@ export {
     getInstitutionTopThreeRankedUsers,
     getInstitutionInfo,
     getUserProblemsSolved,
+    getQuestionOfToday,
+    getMonthlyPotds,
 }
